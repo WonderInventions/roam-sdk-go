@@ -1,6 +1,6 @@
 module github.com/WonderInventions/roam-sdk-go
 
-go 1.21.3
+go 1.20
 
 require github.com/oapi-codegen/runtime v1.0.0
 
