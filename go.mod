@@ -1,4 +1,4 @@
-module github.com/WonderInventions/roamsdk
+module github.com/WonderInventions/roam-sdk-go
 
 go 1.21.3
 
