@@ -1,0 +1,54 @@
+# Builds, vets, and runs the hand-written webhook verifier tests.
+#
+# The generated sources are already compiled once upstream, by the
+# "Generate SDKs" workflow in WonderInventions/developer-ro-am, before they
+# are ever synced here. This job is not a second opinion on that: it checks
+# the combination this repo owns — generated sources plus the hand-written
+# verifier.
+
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Go ${{ matrix.go }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        go: ["1.22", "1.23", "1.24"]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      # Only the hand-written package. Fern emits WireMock-backed tests that
+      # dial localhost:8080; `go test ./...` would fail without a harness we
+      # do not run.
+      - name: Test webhook verifier
+        run: go test ./webhooks/...

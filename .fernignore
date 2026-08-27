@@ -1,0 +1,33 @@
+# Files in this repo that Fern's generated output must never overwrite.
+#
+# The generated SDK is rsynced onto the module root by the "Regenerate SDKs"
+# workflow in WonderInventions/developer-ro-am. Everything listed here is
+# hand-maintained and survives that sync; everything else is replaced wholesale.
+#
+# Paths are rsync --exclude patterns, matched from the repo root.
+
+# Hand-written webhook signature verification, imported as ro.am/roamhq/webhooks.
+#
+# It is not generated because Fern's signature model cannot describe how a
+# signing secret is encoded, and Roam's whsec_ secrets are base64 — see the
+# header of webhooks/verify.go. It sits in its own package so that a
+# regeneration structurally cannot delete it, rather than relying on this
+# entry alone.
+webhooks/
+
+# Guide samples copied in by CI for a compile check, never committed from
+# that workflow. Kept here so a local copy cannot be deleted by --delete.
+examples/
+internal/guidesamples/
+
+# Hand-written docs and legal.
+README.md
+LICENSE
+CHANGELOG.md
+AGENTS.md
+RELEASING.md
+
+# CI, repo metadata.
+.github/
+.gitignore
+.fernignore
