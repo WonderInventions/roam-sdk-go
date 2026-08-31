@@ -1,0 +1,2035 @@
+{
+  "mappings": [
+    {
+      "id": "ea5d2ff1-5c64-455e-b3f8-6ef1f720b9a8",
+      "name": "List chats - default",
+      "request": {
+        "urlPathTemplate": "/chat.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"chats\": [\n    {\n      \"id\": \"295155ae-7df5-4ed5-9ebc-89a170559c81\",\n      \"type\": \"group\",\n      \"threadTimestamp\": 1,\n      \"name\": \"Engineering Team\",\n      \"groupId\": \"88bebce7-6cbb-4666-96f9-5c02d73e6661\",\n      \"created\": \"2024-01-15T09:30:00Z\",\n      \"lastMessageTime\": \"2024-01-15T09:30:00Z\",\n      \"isUnread\": true,\n      \"preview\": {\n        \"text\": \"Let's review the Q2 roadmap on Friday.\",\n        \"contentType\": \"text\",\n        \"senderId\": \"ad1e9cc0-0ffd-47e5-895c-2630a73327b4\",\n        \"mentioned\": true\n      },\n      \"isMuted\": true,\n      \"isPinned\": true\n    },\n    {\n      \"id\": \"53b8a72b-b442-4da2-94ea-41b6116c14ea\",\n      \"type\": \"dm\",\n      \"threadTimestamp\": 1,\n      \"name\": \"Alex Chen\",\n      \"groupId\": \"groupId\",\n      \"created\": \"2024-01-15T09:30:00Z\",\n      \"lastMessageTime\": \"2024-01-15T09:30:00Z\",\n      \"isUnread\": true,\n      \"isMuted\": true,\n      \"isPinned\": true\n    }\n  ],\n  \"nextCursor\": \"YzE6MTc2MDgzMDE2NTEwNTAwMA\",\n  \"addresses\": {\n    \"key\": {\n      \"id\": \"id\",\n      \"type\": \"user\",\n      \"displayName\": \"displayName\",\n      \"displayImageUrl\": \"displayImageUrl\",\n      \"email\": \"email\",\n      \"isGuest\": true,\n      \"botCode\": \"botCode\",\n      \"integrationId\": \"integrationId\"\n    }\n  }\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "ea5d2ff1-5c64-455e-b3f8-6ef1f720b9a8",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "76d0d77b-ed07-4ec5-a3e6-3c55cf1d08c7",
+      "name": "Send a message - Post to existing chat",
+      "request": {
+        "urlPathTemplate": "/chat.post",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"ok\": true,\n  \"chatId\": \"757dfe66-37b4-4772-baa5-8c86ec68c176\",\n  \"threadTimestamp\": 1,\n  \"timestamp\": 1765602474760032,\n  \"scheduledMessageId\": \"scheduledMessageId\",\n  \"sendAt\": \"2024-01-15T09:30:00Z\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "76d0d77b-ed07-4ec5-a3e6-3c55cf1d08c7",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "0f95ed6e-1a55-49bb-8e08-e489464dc7b1",
+      "name": "Post an ephemeral message - Private reply in a channel",
+      "request": {
+        "urlPathTemplate": "/chat.postEphemeral",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"ok\": true,\n  \"chatId\": \"295155ae-7df5-4ed5-9ebc-89a170559c81\",\n  \"timestamp\": 1765602474760032,\n  \"threadTimestamp\": 1\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "0f95ed6e-1a55-49bb-8e08-e489464dc7b1",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "8619c06e-ae2f-48c3-9a3a-325e71707e33",
+      "name": "List scheduled messages - default",
+      "request": {
+        "urlPathTemplate": "/chat.scheduled.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"scheduledMessages\": [\n    {\n      \"scheduledMessageId\": \"0197f9f0-5cc1-7d07-8a12-9e65a8a0c1b9\",\n      \"chatId\": \"757dfe66-37b4-4772-baa5-8c86ec68c176\",\n      \"threadTimestamp\": 1,\n      \"sendAt\": \"2026-08-01T14:30:00Z\",\n      \"createdAt\": \"2026-07-20T09:12:44Z\",\n      \"text\": \"Reminder: sprint review starts in 15 minutes\"\n    }\n  ],\n  \"nextCursor\": \"YzE6MTc1NDA2MzgwMDAwMDowMTk3ZjlmMC01Y2Mx\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "8619c06e-ae2f-48c3-9a3a-325e71707e33",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "86b4df7f-d29e-4a0a-8786-349c667fab86",
+      "name": "Cancel a scheduled message - Cancel a scheduled message",
+      "request": {
+        "urlPathTemplate": "/chat.scheduled.cancel",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"scheduledMessageId\": \"0197f9f0-5cc1-7d07-8a12-9e65a8a0c1b9\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "86b4df7f-d29e-4a0a-8786-349c667fab86",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "4d8e904d-fbd6-48b9-a3f3-56d59aa71c4c",
+      "name": "Start a streaming message - Start a text stream",
+      "request": {
+        "urlPathTemplate": "/chat.startStream",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"streamId\": \"018f5c8e-7d2a-7c4e-8f9a-1a2b3c4d5e6f\",\n  \"chatId\": \"757dfe66-37b4-4772-baa5-8c86ec68c176\",\n  \"threadTimestamp\": 1\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "4d8e904d-fbd6-48b9-a3f3-56d59aa71c4c",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "3e5ac39b-6cab-4dc3-9582-86ae49e7af64",
+      "name": "Append to a streaming message - default",
+      "request": {
+        "urlPathTemplate": "/chat.appendStream",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"streamId\": \"018f5c8e-7d2a-7c4e-8f9a-1a2b3c4d5e6f\",\n  \"chatId\": \"757dfe66-37b4-4772-baa5-8c86ec68c176\",\n  \"threadTimestamp\": 1\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "3e5ac39b-6cab-4dc3-9582-86ae49e7af64",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "c3c6456c-81fa-447f-86e5-a004bfc2a8ca",
+      "name": "Stop a streaming message - default",
+      "request": {
+        "urlPathTemplate": "/chat.stopStream",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"streamId\": \"018f5c8e-7d2a-7c4e-8f9a-1a2b3c4d5e6f\",\n  \"chatId\": \"757dfe66-37b4-4772-baa5-8c86ec68c176\",\n  \"timestamp\": 1765602474760032,\n  \"threadTimestamp\": 1\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "c3c6456c-81fa-447f-86e5-a004bfc2a8ca",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "5ff828dd-be91-4e40-a67f-1454423bbe4e",
+      "name": "Update a message - Update text content",
+      "request": {
+        "urlPathTemplate": "/chat.update",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"chatId\": \"757dfe66-37b4-4772-baa5-8c86ec68c176\",\n  \"timestamp\": 1765602474760032,\n  \"threadTimestamp\": 1\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "5ff828dd-be91-4e40-a67f-1454423bbe4e",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "a36e88de-973b-43ae-b640-d57ae6b84f25",
+      "name": "Delete a message - Delete a message",
+      "request": {
+        "urlPathTemplate": "/chat.delete",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"chatId\": \"757dfe66-37b4-4772-baa5-8c86ec68c176\",\n  \"timestamp\": 1765602474760032,\n  \"threadTimestamp\": 1\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "a36e88de-973b-43ae-b640-d57ae6b84f25",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "d9449221-5ea1-4ca0-8a8c-7eac6b80a8e1",
+      "name": "Send a typing indicator - Typing in existing chat",
+      "request": {
+        "urlPathTemplate": "/chat.typing",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "d9449221-5ea1-4ca0-8a8c-7eac6b80a8e1",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "e7f9a0e3-6eca-43b9-9914-9ffd53b9b324",
+      "name": "Get chat messages - default",
+      "request": {
+        "urlPathTemplate": "/chat.history",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"chatId\": \"295155ae-7df5-4ed5-9ebc-89a170559c81\",\n  \"nextCursor\": \"YzE6MTc2NTYwMjQ3NDc2MDAzMg\",\n  \"threadTimestamp\": 1,\n  \"messages\": [\n    {\n      \"type\": \"message\",\n      \"userId\": \"ad1e9cc0-0ffd-47e5-895c-2630a73327b4\",\n      \"userType\": \"user\",\n      \"chatId\": \"chatId\",\n      \"timestamp\": 1765602474760032,\n      \"threadTimestamp\": 1,\n      \"replyTimestamp\": 1,\n      \"ephemeral\": true,\n      \"text\": \"Hey team, can we sync up on the roadmap this afternoon?\",\n      \"contentType\": \"text\",\n      \"items\": [\n        {\n          \"id\": \"id\",\n          \"type\": \"photo\",\n          \"created\": \"2024-01-15T09:30:00Z\",\n          \"name\": \"name\",\n          \"url\": \"url\"\n        }\n      ],\n      \"voice\": {\n        \"audioUrl\": \"audioUrl\",\n        \"duration\": 1\n      },\n      \"blocks\": [\n        {\n          \"key\": \"value\"\n        }\n      ],\n      \"color\": \"color\",\n      \"replyCount\": 1,\n      \"mentions\": [\n        \"mentions\"\n      ]\n    },\n    {\n      \"type\": \"message\",\n      \"userId\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n      \"userType\": \"bot\",\n      \"chatId\": \"chatId\",\n      \"timestamp\": 1765602480123456,\n      \"threadTimestamp\": 1,\n      \"replyTimestamp\": 1,\n      \"ephemeral\": true,\n      \"text\": \"Sure, I'm free at 3pm!\",\n      \"contentType\": \"text\",\n      \"items\": [\n        {\n          \"id\": \"id\",\n          \"type\": \"photo\",\n          \"created\": \"2024-01-15T09:30:00Z\",\n          \"name\": \"name\",\n          \"url\": \"url\"\n        }\n      ],\n      \"voice\": {\n        \"audioUrl\": \"audioUrl\",\n        \"duration\": 1\n      },\n      \"blocks\": [\n        {\n          \"key\": \"value\"\n        }\n      ],\n      \"color\": \"color\",\n      \"replyCount\": 1,\n      \"mentions\": [\n        \"mentions\"\n      ]\n    }\n  ],\n  \"addresses\": {\n    \"key\": {\n      \"id\": \"id\",\n      \"type\": \"user\",\n      \"displayName\": \"displayName\",\n      \"displayImageUrl\": \"displayImageUrl\",\n      \"email\": \"email\",\n      \"isGuest\": true,\n      \"botCode\": \"botCode\",\n      \"integrationId\": \"integrationId\"\n    }\n  }\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "e7f9a0e3-6eca-43b9-9914-9ffd53b9b324",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "2977d7b1-5a94-43fd-8356-e51bbd99572d",
+      "name": "Search chat messages - List recent messages across all chats",
+      "request": {
+        "urlPathTemplate": "/chat.search",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"messages\": [\n    {\n      \"type\": \"message\",\n      \"userId\": \"ad1e9cc0-0ffd-47e5-895c-2630a73327b4\",\n      \"userType\": \"user\",\n      \"chatId\": \"295155ae-7df5-4ed5-9ebc-89a170559c81\",\n      \"timestamp\": 1765602474760032,\n      \"threadTimestamp\": 1,\n      \"replyTimestamp\": 1,\n      \"ephemeral\": true,\n      \"text\": \"Let's review the Q2 roadmap on Friday.\",\n      \"contentType\": \"text\",\n      \"items\": [\n        {\n          \"id\": \"id\",\n          \"type\": \"photo\",\n          \"created\": \"2024-01-15T09:30:00Z\",\n          \"name\": \"name\",\n          \"url\": \"url\"\n        }\n      ],\n      \"voice\": {\n        \"audioUrl\": \"audioUrl\",\n        \"duration\": 1\n      },\n      \"blocks\": [\n        {\n          \"key\": \"value\"\n        }\n      ],\n      \"color\": \"color\",\n      \"replyCount\": 1,\n      \"mentions\": [\n        \"mentions\"\n      ]\n    }\n  ],\n  \"nextCursor\": \"YzE6MTc2NTYwMjQ3NDc2MDAzMjoyOTUxNTVhZS03ZGY1\",\n  \"addresses\": {\n    \"key\": {\n      \"id\": \"id\",\n      \"type\": \"user\",\n      \"displayName\": \"displayName\",\n      \"displayImageUrl\": \"displayImageUrl\",\n      \"email\": \"email\",\n      \"isGuest\": true,\n      \"botCode\": \"botCode\",\n      \"integrationId\": \"integrationId\"\n    }\n  }\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "2977d7b1-5a94-43fd-8356-e51bbd99572d",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "83a049f4-db0c-4849-a790-74b4c2bcfc68",
+      "name": "Resolve a chat link - Caller has access",
+      "request": {
+        "urlPathTemplate": "/chat.link.resolve",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"chatId\": \"757dfe66-37b4-4772-baa5-8c86ec68c176\",\n  \"timestamp\": 1765602474760032,\n  \"threadTimestamp\": 1,\n  \"readable\": true,\n  \"message\": {\n    \"type\": \"message\",\n    \"userId\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n    \"userType\": \"user\",\n    \"chatId\": \"757dfe66-37b4-4772-baa5-8c86ec68c176\",\n    \"timestamp\": 1765602474760032,\n    \"threadTimestamp\": 1,\n    \"replyTimestamp\": 1,\n    \"ephemeral\": true,\n    \"text\": \"Hello from the API\",\n    \"contentType\": \"text\",\n    \"items\": [\n      {\n        \"id\": \"id\",\n        \"type\": \"photo\",\n        \"created\": \"2024-01-15T09:30:00Z\",\n        \"name\": \"name\",\n        \"url\": \"url\"\n      }\n    ],\n    \"poll\": {\n      \"question\": \"question\",\n      \"options\": [\n        {}\n      ],\n      \"allowMultipleAnswers\": true,\n      \"closesAt\": \"2024-01-15T09:30:00Z\"\n    },\n    \"voice\": {\n      \"audioUrl\": \"audioUrl\",\n      \"duration\": 1,\n      \"transcript\": \"transcript\"\n    },\n    \"blocks\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"color\": \"color\",\n    \"replyCount\": 1,\n    \"sender\": {\n      \"name\": \"name\",\n      \"imageUrl\": \"imageUrl\"\n    },\n    \"mentions\": [\n      \"mentions\"\n    ]\n  }\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "83a049f4-db0c-4849-a790-74b4c2bcfc68",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "9cd2319f-f04a-4431-b41a-9f2c6cf0f8f0",
+      "name": "Create a chat message link - default",
+      "request": {
+        "urlPathTemplate": "/chat.link.create",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"link\": \"https://ro.am/r/#/c/KVFVrn31TtWevImhcFWcgQ/MTc2NTYwMjQ3NDc2MDAzMi9ub3Rocg\",\n  \"chatId\": \"295155ae-7df5-4ed5-9ebc-89a170559c81\",\n  \"timestamp\": 1765602474760032,\n  \"threadTimestamp\": 1000000\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "9cd2319f-f04a-4431-b41a-9f2c6cf0f8f0",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "7c834792-ca94-42b6-9a90-4324fb691e7b",
+      "name": "Unfurl a link - default",
+      "request": {
+        "urlPathTemplate": "/chat.unfurl",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"ok\": true\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "7c834792-ca94-42b6-9a90-4324fb691e7b",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "712ddae2-a80d-4e06-86c5-58cd5c6ae761",
+      "name": "Add reaction to message - React to a message",
+      "request": {
+        "urlPathTemplate": "/reaction.add",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "712ddae2-a80d-4e06-86c5-58cd5c6ae761",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "4a73300d-d4cd-4cab-afd0-29645449a0c3",
+      "name": "Remove reaction from message - default",
+      "request": {
+        "urlPathTemplate": "/reaction.remove",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "4a73300d-d4cd-4cab-afd0-29645449a0c3",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "fa03aa75-aae0-4715-b31d-da0c37c79642",
+      "name": "List reactions on a message - default",
+      "request": {
+        "urlPathTemplate": "/reaction.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "queryParameters": {
+          "chatId": {
+            "equalTo": "chatId"
+          },
+          "timestamp": {
+            "equalTo": "1"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"ok\": true,\n  \"chatId\": \"7be17589-4b9a-4524-bddb-ce60abea08e6\",\n  \"timestamp\": 1755723832718034,\n  \"threadTimestamp\": 1,\n  \"reactions\": [\n    {\n      \"name\": \"thumbs_up\",\n      \"count\": 2,\n      \"users\": [\n        \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n        \"f589a8cb-78ac-493e-8719-0fa8a22f65e0\"\n      ]\n    },\n    {\n      \"name\": \"heart\",\n      \"count\": 1,\n      \"users\": [\n        \"af6663d5-0f37-4105-95df-4fea20ef7c7c\"\n      ]\n    }\n  ],\n  \"pollVotes\": [\n    {\n      \"optionId\": \"optionId\",\n      \"text\": \"text\",\n      \"count\": 1,\n      \"users\": [\n        \"users\"\n      ]\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "fa03aa75-aae0-4715-b31d-da0c37c79642",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "7201660f-c6ce-43df-a414-0c77de1c1725",
+      "name": "Create a file upload - Chat attachment",
+      "request": {
+        "urlPathTemplate": "/asset.create",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"assetId\": \"9b1c2d3e-4f50-6a7b-8c9d-0e1f2a3b4c5d\",\n  \"uploadUrl\": \"https://uploads.ro.am/\",\n  \"uploadMethod\": \"POST\",\n  \"uploadHeaders\": {\n    \"Authorization\": \"Bearer eyJhbGciOiJF...\",\n    \"Upload-Draft-Interop-Version\": \"6\",\n    \"Upload-Complete\": \"?1\",\n    \"Upload-Length\": \"248173\"\n  },\n  \"imageUrl\": \"imageUrl\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "7201660f-c6ce-43df-a414-0c77de1c1725",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "422249af-0b71-4ee7-92c3-af7d71a2a051",
+      "name": "Post story - default",
+      "request": {
+        "urlPathTemplate": "/story.post",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"itemId\": \"019be84b-1234-7890-8850-96de4cc39130\",\n  \"chatId\": \"757dfe66-37b4-4772-baa5-8c86ec68c176\",\n  \"expiresAt\": \"2026-07-10T15:04:05Z\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "422249af-0b71-4ee7-92c3-af7d71a2a051",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "4c3ff6f5-058d-461c-a634-ffe867afc5b6",
+      "name": "List users - Unfiltered active-member directory",
+      "request": {
+        "urlPathTemplate": "/user.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"users\": [\n    {\n      \"id\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n      \"type\": \"user\",\n      \"name\": \"Alex Chen\",\n      \"imageUrl\": \"https://ro.am/card-images/7be550c0-6994-4b8f-9a41-48825c6fc62a\",\n      \"email\": \"alex.chen@example.com\",\n      \"isGuest\": true,\n      \"isAdmin\": false,\n      \"jobTitle\": \"jobTitle\",\n      \"location\": \"location\",\n      \"status\": \"checkedIn\",\n      \"willReturn\": {\n        \"returnTime\": \"2024-01-15T09:30:00Z\"\n      },\n      \"available\": true,\n      \"botCode\": \"botCode\",\n      \"integrationId\": \"integrationId\"\n    },\n    {\n      \"id\": \"af6663d5-0f37-4105-95df-4fea20ef7c7c\",\n      \"type\": \"user\",\n      \"name\": \"Jordan Smith\",\n      \"imageUrl\": \"https://ro.am/card-images/41b2a910-e37f-4ffb-9cdd-5be7d05e9f6f\",\n      \"email\": \"jordan.smith@example.com\",\n      \"isGuest\": true,\n      \"isAdmin\": true,\n      \"jobTitle\": \"jobTitle\",\n      \"location\": \"location\",\n      \"status\": \"checkedIn\",\n      \"willReturn\": {\n        \"returnTime\": \"2024-01-15T09:30:00Z\"\n      },\n      \"available\": true,\n      \"botCode\": \"botCode\",\n      \"integrationId\": \"integrationId\"\n    }\n  ],\n  \"nextCursor\": \"YzE6NTQ2\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "4c3ff6f5-058d-461c-a634-ffe867afc5b6",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "3aa083c5-e5f0-460d-80e6-796fc5fbe07e",
+      "name": "Get user info - Workspace member (false-valued isAdmin is preserved)",
+      "request": {
+        "urlPathTemplate": "/user.info",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n  \"type\": \"user\",\n  \"name\": \"Alex Chen\",\n  \"imageUrl\": \"https://ro.am/card-images/7be550c0-6994-4b8f-9a41-48825c6fc62a\",\n  \"email\": \"alex.chen@example.com\",\n  \"isGuest\": true,\n  \"isAdmin\": false,\n  \"jobTitle\": \"Software Engineer\",\n  \"location\": \"San Francisco, CA\",\n  \"status\": \"checkedOut\",\n  \"willReturn\": {\n    \"returnTime\": \"2024-01-15T09:30:00Z\",\n    \"reason\": \"On Vacation\",\n    \"outOfRoam\": true\n  },\n  \"available\": true,\n  \"botCode\": \"botCode\",\n  \"integrationId\": \"integrationId\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "3aa083c5-e5f0-460d-80e6-796fc5fbe07e",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "4dc0326f-1f03-49f5-8003-5996ca246ec5",
+      "name": "Set a user's external activity - default",
+      "request": {
+        "urlPathTemplate": "/user.activity.set",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"userId\": \"0cc74785-e31e-4403-aa5e-0cc7c1897e66\",\n  \"externalId\": \"justcall:call:CA123\",\n  \"display\": {\n    \"emoji\": \"📞\",\n    \"title\": \"On a customer call\",\n    \"subtitle\": \"JustCall · Acme Corp\",\n    \"color\": \"green\"\n  },\n  \"dnd\": true,\n  \"startedAt\": \"2026-05-18T16:04:17Z\",\n  \"expiresAt\": \"2026-05-18T16:34:17Z\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "4dc0326f-1f03-49f5-8003-5996ca246ec5",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "57f5e018-408e-4282-a8e7-bb43082fecd6",
+      "name": "Clear a user's external activity - default",
+      "request": {
+        "urlPathTemplate": "/user.activity.clear",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "57f5e018-408e-4282-a8e7-bb43082fecd6",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "3c465713-2fd8-4552-a92e-d9f097a08b50",
+      "name": "List a user's external activities - default",
+      "request": {
+        "urlPathTemplate": "/user.activity.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "queryParameters": {
+          "userId": {
+            "equalTo": "userId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"activities\": [\n    {\n      \"userId\": \"0cc74785-e31e-4403-aa5e-0cc7c1897e66\",\n      \"externalId\": \"justcall:call:CA123\",\n      \"display\": {\n        \"emoji\": \"📞\",\n        \"title\": \"On a customer call\",\n        \"subtitle\": \"JustCall · Acme Corp\",\n        \"color\": \"green\"\n      },\n      \"dnd\": true,\n      \"startedAt\": \"2026-05-18T16:04:17Z\",\n      \"expiresAt\": \"2026-05-18T16:34:17Z\"\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "3c465713-2fd8-4552-a92e-d9f097a08b50",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "f51b00ec-26be-4cb8-8edb-2d84a34c66f0",
+      "name": "Export message events - default",
+      "request": {
+        "urlPathTemplate": "/messageevent.export",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"{\\\"eventType\\\":\\\"sent\\\",\\\"chatId\\\":\\\"757dfe66-37b4-4772-baa5-8c86ec68c176\\\",\\\"timestamp\\\":1737454800000000,\\\"messageId\\\":\\\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\\\",\\\"sender\\\":{\\\"participantType\\\":\\\"email\\\",\\\"id\\\":\\\"U-709b8a57-70bc-427a-b6f0-b16ba5297f8c\\\",\\\"displayName\\\":\\\"Alex Chen\\\",\\\"email\\\":\\\"alex.chen@example.com\\\"},\\\"contentType\\\":\\\"text\\\",\\\"content\\\":{\\\"text\\\":\\\"Good morning team!\\\",\\\"markdownText\\\":\\\"Good morning team!\\\",\\\"attachments\\\":[]}}\\n{\\\"eventType\\\":\\\"sent\\\",\\\"chatId\\\":\\\"757dfe66-37b4-4772-baa5-8c86ec68c176\\\",\\\"timestamp\\\":1737454860000000,\\\"messageId\\\":\\\"b2c3d4e5-f6a7-8901-bcde-f23456789012\\\",\\\"sender\\\":{\\\"participantType\\\":\\\"email\\\",\\\"id\\\":\\\"U-af6663d5-0f37-4105-95df-4fea20ef7c7c\\\",\\\"displayName\\\":\\\"Jordan Smith\\\",\\\"email\\\":\\\"jordan.smith@example.com\\\"},\\\"contentType\\\":\\\"text\\\",\\\"content\\\":{\\\"text\\\":\\\"Good morning! Ready for the standup?\\\",\\\"markdownText\\\":\\\"Good morning! Ready for the standup?\\\",\\\"attachments\\\":[]}}\\n\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "f51b00ec-26be-4cb8-8edb-2d84a34c66f0",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "d723d4b3-6ff4-48ce-96a9-b0af918c87f0",
+      "name": "User Audit Log - default",
+      "request": {
+        "urlPathTemplate": "/userauditlog.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"auditLogs\": [\n    {\n      \"timestamp\": \"2026-01-21T07:59:59Z\",\n      \"eventType\": \"ENTER_ROOM\",\n      \"name\": \"Alex Chen\",\n      \"email\": \"alex.chen@example.com\",\n      \"data\": {\n        \"location\": {\n          \"kind\": \"RoomLocation\",\n          \"roomId\": 266,\n          \"positionNumber\": 3\n        }\n      },\n      \"platform\": \"web\"\n    },\n    {\n      \"timestamp\": \"2026-01-21T07:58:30Z\",\n      \"eventType\": \"LEAVE_ROOM\",\n      \"name\": \"Jordan Smith\",\n      \"email\": \"jordan.smith@example.com\",\n      \"data\": {\n        \"location\": {\n          \"kind\": \"RoomLocation\",\n          \"roomId\": 215,\n          \"positionNumber\": 14\n        }\n      },\n      \"platform\": \"web\"\n    },\n    {\n      \"timestamp\": \"2026-01-21T07:55:00Z\",\n      \"eventType\": \"ENTER_ROOM\",\n      \"name\": \"Taylor Williams\",\n      \"email\": \"taylor@example.com\",\n      \"data\": {\n        \"location\": {\n          \"kind\": \"AudienceLocation\",\n          \"roomId\": 215,\n          \"sectionNumber\": 0,\n          \"positionNumber\": 46\n        }\n      },\n      \"platform\": \"web\"\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "d723d4b3-6ff4-48ce-96a9-b0af918c87f0",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "f16baf3c-7d55-4500-a527-393effd1f3db",
+      "name": "List conversations - default",
+      "request": {
+        "urlPathTemplate": "/conversation.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"conversations\": [\n    {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"place\": \"Headquarters\",\n      \"room\": \"Conference Room A\",\n      \"roomType\": \"meeting\",\n      \"start\": \"2025-03-15T14:00:00Z\",\n      \"end\": \"2025-03-15T14:45:00Z\",\n      \"participants\": [\n        {\n          \"name\": \"Alex Chen\",\n          \"email\": \"alex.chen@example.com\",\n          \"seconds\": 2700\n        },\n        {\n          \"name\": \"Jordan Smith\",\n          \"email\": \"jordan.smith@example.com\",\n          \"seconds\": 2400\n        }\n      ],\n      \"meetingLinkIds\": [\n        \"meetingLinkIds\"\n      ]\n    }\n  ],\n  \"nextCursor\": \"YzE6MjAyNS0wMy0xNVQxNDowMDowMFo\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "f16baf3c-7d55-4500-a527-393effd1f3db",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "ba2779de-e2a6-40a8-bbb0-4ac246b2559b",
+      "name": "List meetings - default",
+      "request": {
+        "urlPathTemplate": "/meeting.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"meetings\": [\n    {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"title\": \"Weekly Team Standup\",\n      \"subtitle\": \"subtitle\",\n      \"start\": \"2025-04-07T10:00:00Z\",\n      \"participantCount\": 8,\n      \"hasVideo\": true,\n      \"videoStatus\": \"available\",\n      \"host\": {\n        \"type\": \"member\",\n        \"id\": \"ad1e9cc0-0ffd-47e5-895c-2630a73327b4\",\n        \"name\": \"Alex Chen\",\n        \"email\": \"alex.chen@example.com\"\n      },\n      \"summary\": \"summary\",\n      \"actionItems\": [\n        {\n          \"title\": \"title\"\n        }\n      ],\n      \"chapters\": [\n        {}\n      ]\n    },\n    {\n      \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n      \"title\": \"Product Review\",\n      \"subtitle\": \"Q2 Roadmap\",\n      \"start\": \"2025-04-06T14:00:00Z\",\n      \"participantCount\": 12,\n      \"hasVideo\": true,\n      \"videoStatus\": \"processing\",\n      \"host\": {\n        \"type\": \"member\",\n        \"id\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n        \"name\": \"Jamie Park\",\n        \"email\": \"jamie.park@example.com\"\n      },\n      \"summary\": \"summary\",\n      \"actionItems\": [\n        {\n          \"title\": \"title\"\n        }\n      ],\n      \"chapters\": [\n        {}\n      ]\n    }\n  ],\n  \"nextCursor\": \"YzE6MjAyNS0wNC0wNlQxNDowMDowMFo\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "ba2779de-e2a6-40a8-bbb0-4ac246b2559b",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "cdcce3b8-a5da-42af-bd11-5a8ae9e0b2a8",
+      "name": "Get meeting info - default",
+      "request": {
+        "urlPathTemplate": "/meeting.info",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "queryParameters": {
+          "id": {
+            "equalTo": "id"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n  \"title\": \"Weekly Team Standup\",\n  \"subtitle\": \"subtitle\",\n  \"start\": \"2025-04-07T10:00:00Z\",\n  \"end\": \"2025-04-07T10:42:00Z\",\n  \"participantCount\": 8,\n  \"hasVideo\": true,\n  \"videoStatus\": \"available\",\n  \"host\": {\n    \"type\": \"member\",\n    \"id\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n    \"name\": \"Alex Chen\",\n    \"email\": \"alex.chen@example.com\"\n  },\n  \"participants\": [\n    {\n      \"type\": \"member\",\n      \"id\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n      \"name\": \"Alex Chen\",\n      \"email\": \"alex.chen@example.com\"\n    },\n    {\n      \"type\": \"guest\",\n      \"id\": \"af6663d5-0f37-4105-95df-4fea20ef7c7c\",\n      \"name\": \"Jordan Smith\",\n      \"email\": \"email\"\n    }\n  ],\n  \"participantsOmitted\": false,\n  \"summary\": \"The team discussed Q2 roadmap priorities and assigned action items for the upcoming sprint.\",\n  \"actionItems\": [\n    {\n      \"id\": \"f1e2d3c4-b5a6-7890-abcd-ef1234567890\",\n      \"title\": \"Update API documentation\",\n      \"description\": \"Add v1 meeting endpoints to the developer docs\",\n      \"complete\": false,\n      \"assigneeId\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n      \"suggestedAssigneeId\": \"suggestedAssigneeId\",\n      \"suggestedAssigneeName\": \"Alex Chen\",\n      \"assignedToMe\": true,\n      \"suggestedForMe\": true\n    }\n  ],\n  \"chapters\": [\n    {\n      \"name\": \"Sprint Review\",\n      \"start\": 0,\n      \"synopsis\": \"Reviewed completed tasks from the previous sprint\"\n    },\n    {\n      \"name\": \"Q2 Planning\",\n      \"start\": 1140000,\n      \"synopsis\": \"Discussed priorities and resource allocation for Q2\"\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "cdcce3b8-a5da-42af-bd11-5a8ae9e0b2a8",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "a1416229-048a-4522-8f69-35771c1273b5",
+      "name": "List meeting participants - default",
+      "request": {
+        "urlPathTemplate": "/meeting.participants",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "queryParameters": {
+          "id": {
+            "equalTo": "id"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"ok\": true,\n  \"participants\": [\n    {\n      \"type\": \"member\",\n      \"id\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n      \"name\": \"Alex Chen\",\n      \"email\": \"alex.chen@example.com\"\n    },\n    {\n      \"type\": \"guest\",\n      \"id\": \"af6663d5-0f37-4105-95df-4fea20ef7c7c\",\n      \"name\": \"Jordan Smith\",\n      \"email\": \"email\"\n    }\n  ],\n  \"total\": 8,\n  \"nextCursor\": \"YzE6YWY2NjYzZDUtMGYzNy00MTA1LTk1ZGYtNGZlYTIwZWY3Yzdj\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "a1416229-048a-4522-8f69-35771c1273b5",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "e2e62b50-9e84-45c3-9634-de9766e4cfd5",
+      "name": "Get meeting transcript - default",
+      "request": {
+        "urlPathTemplate": "/meeting.transcript",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "queryParameters": {
+          "id": {
+            "equalTo": "id"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n  \"cues\": [\n    {\n      \"speakerId\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n      \"text\": \"Let's start with the sprint review.\",\n      \"start\": 0,\n      \"end\": 3200\n    },\n    {\n      \"speakerId\": \"af6663d5-0f37-4105-95df-4fea20ef7c7c\",\n      \"text\": \"Sure, I'll go first with the API updates.\",\n      \"start\": 3500,\n      \"end\": 6100\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "e2e62b50-9e84-45c3-9634-de9766e4cfd5",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "1b811743-b6f9-450a-9df6-0a7d780752b7",
+      "name": "Search meetings - default",
+      "request": {
+        "urlPathTemplate": "/meeting.search",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "queryParameters": {
+          "query": {
+            "equalTo": "query"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"results\": [\n    {\n      \"meetingId\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"meetingName\": \"Weekly Team Standup\",\n      \"meetingDate\": \"2025-04-07T10:00:00Z\",\n      \"participants\": [\n        \"Alex Chen\",\n        \"Jordan Smith\"\n      ],\n      \"highlightedSummary\": \"Discussed the **API documentation** updates for v1 endpoints\",\n      \"highlightedTranscript\": \"...we need to add the meeting endpoints to the **API docs**...\"\n    }\n  ],\n  \"inferredFilter\": {\n    \"after\": \"after\",\n    \"before\": \"before\",\n    \"attendees\": [\n      \"attendees\"\n    ]\n  },\n  \"inferredQuery\": \"inferredQuery\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "1b811743-b6f9-450a-9df6-0a7d780752b7",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "799bf499-7de7-473e-8ea8-4252bdf8e200",
+      "name": "Prompt about a meeting - Ask about action items",
+      "request": {
+        "urlPathTemplate": "/meeting.prompt",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"response\": \"Alex was assigned two action items: 1) Update the API documentation with v1 meeting endpoints, and 2) Review the PR for the new webhook events.\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "799bf499-7de7-473e-8ea8-4252bdf8e200",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "21b40654-772c-4a8e-9e3b-94771be38551",
+      "name": "Get a shareable meeting link - Get a shareable link for a meeting",
+      "request": {
+        "urlPathTemplate": "/meeting.shareLink",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n  \"url\": \"https://ro.am/share/abc123xyz\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "21b40654-772c-4a8e-9e3b-94771be38551",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "718d74d8-1901-44e2-bffa-8cff682d9886",
+      "name": "Create a meeting link - default",
+      "request": {
+        "urlPathTemplate": "/meeting.link.create",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n  \"url\": \"https://ro.am/r/#/d/abc123xyz/def456uvw\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "718d74d8-1901-44e2-bffa-8cff682d9886",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "bf419a7c-cf98-4d40-8257-56c7df1f8fee",
+      "name": "Get a meeting link - default",
+      "request": {
+        "urlPathTemplate": "/meeting.link.info",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n  \"name\": \"Q1 Planning Session\",\n  \"host\": \"alex.chen@example.com\",\n  \"start\": \"2026-02-15T14:00:00Z\",\n  \"end\": \"2026-02-15T15:00:00Z\",\n  \"url\": \"https://ro.am/r/#/d/abc123xyz/def456uvw\",\n  \"requireUnconfirmedEmail\": false\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "bf419a7c-cf98-4d40-8257-56c7df1f8fee",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "56f2f5bf-9a5a-48c7-9173-1a1f6e94458a",
+      "name": "Update a meeting link - default",
+      "request": {
+        "urlPathTemplate": "/meeting.link.update",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "56f2f5bf-9a5a-48c7-9173-1a1f6e94458a",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "f84dfd9c-e791-4fa5-8b0c-64fa843c1d2b",
+      "name": "List meeting recordings (Legacy) - default",
+      "request": {
+        "urlPathTemplate": "/recording.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"recordings\": [\n    {\n      \"recordingId\": \"9003ec0e-ea7d-41b4-93cf-ef42d730f771\",\n      \"location\": \"Conference Room A\",\n      \"startTime\": \"2026-01-21T14:10:54Z\",\n      \"endTime\": \"2026-01-21T15:12:27Z\",\n      \"videoUrl\": \"https://ro.am/recordings/video/9003ec0e-ea7d-41b4-93cf-ef42d730f771.mp4?pwd=abc123\"\n    },\n    {\n      \"recordingId\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"location\": \"Huddle Space\",\n      \"startTime\": \"2026-01-21T10:00:00Z\",\n      \"endTime\": \"2026-01-21T10:45:00Z\",\n      \"videoUrl\": \"https://ro.am/recordings/video/a1b2c3d4-e5f6-7890-abcd-ef1234567890.mp4?pwd=def456\"\n    }\n  ],\n  \"nextCursor\": \"YzE6MjAyNi0wMS0yMVQxMDowMDowMC4wMDBa\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "f84dfd9c-e791-4fa5-8b0c-64fa843c1d2b",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "a5338875-89eb-45d5-ba8a-04ca2aa6f5a9",
+      "name": "Create a calendar event - default",
+      "request": {
+        "urlPathTemplate": "/calendar.event.create",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"evt_01HX3YABCDEF\",\n  \"title\": \"Q1 Planning\",\n  \"description\": \"Plan Q1 roadmap\",\n  \"start\": \"2026-02-15T14:00:00Z\",\n  \"end\": \"2026-02-15T15:00:00Z\",\n  \"allDay\": true,\n  \"attendees\": [\n    {\n      \"name\": \"Sam Smith\",\n      \"email\": \"sam@example.com\",\n      \"status\": \"needsAction\"\n    }\n  ],\n  \"meetingLink\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"url\": \"https://ro.am/r/#/d/abc123xyz/def456uvw\"\n  }\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "a5338875-89eb-45d5-ba8a-04ca2aa6f5a9",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "4f3f92cc-7ace-4871-b605-9a4a7cff77de",
+      "name": "List calendar events - default",
+      "request": {
+        "urlPathTemplate": "/calendar.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"events\": [\n    {\n      \"id\": \"evt_01HX3YABCDEF\",\n      \"title\": \"Q2 Planning\",\n      \"description\": \"Plan Q2 roadmap\",\n      \"startTime\": \"2024-01-15T09:30:00Z\",\n      \"endTime\": \"2024-01-15T09:30:00Z\",\n      \"weekday\": \"Tuesday\",\n      \"allDay\": true,\n      \"location\": \"https://ro.am/r/#/d/abc123xyz/def456uvw\",\n      \"invites\": [\n        {\n          \"name\": \"Sam Smith\",\n          \"email\": \"sam@example.com\",\n          \"responseStatus\": \"accepted\"\n        }\n      ],\n      \"organizer\": \"host@example.com\",\n      \"rrule\": \"rrule\",\n      \"recurringEventId\": \"recurringEventId\",\n      \"meetingLinkId\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\"\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "4f3f92cc-7ace-4871-b605-9a4a7cff77de",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "c2ac6f69-ee12-4ffb-9bf0-68ada596d32f",
+      "name": "List lobbies - default",
+      "request": {
+        "urlPathTemplate": "/lobby.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"lobbies\": [\n    {\n      \"id\": \"6a2e0a6c-2a63-4a7d-9f2e-9b63f2a6c4b1\",\n      \"slug\": \"\",\n      \"displayName\": \"Default Lobby\",\n      \"active\": true,\n      \"url\": \"https://ro.am/person\",\n      \"handle\": \"person\"\n    },\n    {\n      \"id\": \"7b3c1d92-6d6f-4f23-9c2a-2a5f8e1d4c77\",\n      \"slug\": \"tour\",\n      \"displayName\": \"Tour Lobby\",\n      \"active\": true,\n      \"url\": \"https://ro.am/person/tour\",\n      \"handle\": \"person\"\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "c2ac6f69-ee12-4ffb-9bf0-68ada596d32f",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "3fa7d20b-ba07-4782-a5a3-524f84d2c9b0",
+      "name": "List lobby bookings - default",
+      "request": {
+        "urlPathTemplate": "/lobby.booking.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "queryParameters": {
+          "lobbyId": {
+            "equalTo": "lobbyId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"bookings\": [\n    {\n      \"id\": \"018f3f37-eca3-7d07-8a12-9e65a8a0c1b9\",\n      \"start\": \"2025-08-03T14:10:54Z\",\n      \"end\": \"2025-08-03T14:40:54Z\",\n      \"status\": \"active\",\n      \"timeZone\": \"America/Los_Angeles\",\n      \"notes\": \"Intro call\",\n      \"created\": \"2025-08-01T10:00:00Z\",\n      \"hosts\": [\n        {\n          \"name\": \"Alex Doe\",\n          \"email\": \"alex@example.com\",\n          \"isOrganizer\": true\n        }\n      ],\n      \"invitees\": [\n        {\n          \"name\": \"Sam Smith\",\n          \"email\": \"sam@example.com\",\n          \"status\": \"invited\",\n          \"isBooker\": true\n        }\n      ],\n      \"responses\": [\n        {\n          \"fieldId\": \"fieldId\"\n        }\n      ],\n      \"meetingLink\": \"meetingLink\"\n    }\n  ],\n  \"nextCursor\": \"YzE6MDE4ZjNmMzktMmI1Yy03YjNkLTlmOTYtOGIyZjFjMGUxMjM0\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "3fa7d20b-ba07-4782-a5a3-524f84d2c9b0",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "0235050c-5426-49d6-9509-bc12556d9801",
+      "name": "List magicasts - default",
+      "request": {
+        "urlPathTemplate": "/magicast.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"magicasts\": [\n    {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"name\": \"Q1 All-Hands Recap\",\n      \"createdAt\": \"2026-01-21T18:30:00Z\",\n      \"ownerId\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n      \"coverImageUrl\": \"https://ro.am/card-images/a1b2c3d4-e5f6-7890-abcd-ef1234567890\"\n    }\n  ],\n  \"nextCursor\": \"YzE6MjAyNi0wMS0yMVQxODozMDowMFo6YTFiMmMzZDQtZTVmNg\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "0235050c-5426-49d6-9509-bc12556d9801",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "8753e6c7-fc77-46ca-851c-cc0efe9de39e",
+      "name": "Get magicast info - default",
+      "request": {
+        "urlPathTemplate": "/magicast.info",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "queryParameters": {
+          "id": {
+            "equalTo": "id"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n  \"name\": \"Q1 All-Hands Recap\",\n  \"createdAt\": \"2026-01-21T18:30:00Z\",\n  \"ownerId\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n  \"coverImageUrl\": \"https://ro.am/card-images/a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n  \"durationMs\": 184000,\n  \"videoStatus\": \"available\",\n  \"videoUrl\": \"https://cdn.example/signed/magicast.mp4\",\n  \"shareUrl\": \"https://ro.am/share/abcd1234-efgh5678-ijkl9012-mnop3456\",\n  \"chapters\": [\n    {\n      \"title\": \"Intro\",\n      \"startTime\": 0\n    },\n    {\n      \"title\": \"Roadmap\",\n      \"startTime\": 32000\n    }\n  ],\n  \"cues\": [\n    {\n      \"text\": \"Welcome to the recap.\",\n      \"startOffset\": 0,\n      \"endOffset\": 2400\n    },\n    {\n      \"text\": \"Let's look at the roadmap.\",\n      \"startOffset\": 2400,\n      \"endOffset\": 6100\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "8753e6c7-fc77-46ca-851c-cc0efe9de39e",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "03b97ca5-9ba0-469e-8892-873481131e52",
+      "name": "Get a shareable Magicast link - Get a shareable link for a Magicast",
+      "request": {
+        "urlPathTemplate": "/magicast.shareLink",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n  \"url\": \"https://ro.am/share/abcd1234-efgh5678-ijkl9012-mnop3456\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "03b97ca5-9ba0-469e-8892-873481131e52",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "cdab3f4f-2f89-4d84-8924-dbfd1d03bfea",
+      "name": "List groups - default",
+      "request": {
+        "urlPathTemplate": "/group.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"groups\": [\n    {\n      \"id\": \"88bebce7-6cbb-4666-96f9-5c02d73e6661\",\n      \"name\": \"All Hands\",\n      \"description\": \"Company-wide announcements\",\n      \"imageUrl\": \"https://ro.am/card-images/88bebce7-6cbb-4666-96f9-5c02d73e6661\",\n      \"type\": \"roam\",\n      \"accessMode\": \"public\",\n      \"dateCreated\": \"2024-01-15T09:30:00Z\"\n    },\n    {\n      \"id\": \"c6040d77-a61c-4834-a939-fe3e687ffd72\",\n      \"name\": \"Engineering Team\",\n      \"description\": \"description\",\n      \"imageUrl\": \"https://ro.am/card-images/c6040d77-a61c-4834-a939-fe3e687ffd72\",\n      \"type\": \"standard\",\n      \"accessMode\": \"public\",\n      \"dateCreated\": \"2024-01-15T09:30:00Z\"\n    }\n  ],\n  \"nextCursor\": \"YzE6MjAyNS0wMi0yMFQxNDozMDowMFo6YzYwNDBkNzctYTYxYw\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "cdab3f4f-2f89-4d84-8924-dbfd1d03bfea",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "0279afd3-da2a-41da-bf47-47fa63f54f8b",
+      "name": "Get group info - default",
+      "request": {
+        "urlPathTemplate": "/group.info",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"88bebce7-6cbb-4666-96f9-5c02d73e6661\",\n  \"chatId\": \"757dfe66-37b4-4772-baa5-8c86ec68c176\",\n  \"name\": \"Engineering Team\",\n  \"type\": \"standard\",\n  \"accessMode\": \"public\",\n  \"groupManagement\": \"allMembers\",\n  \"enforceThreadedMode\": true,\n  \"dateCreated\": \"2025-02-20T14:30:00Z\",\n  \"imageUrl\": \"https://ro.am/card-images/88bebce7-6cbb-4666-96f9-5c02d73e6661\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "0279afd3-da2a-41da-bf47-47fa63f54f8b",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "6944734f-b53f-4e7f-8204-8e24e79f0ef2",
+      "name": "Create a group - Create group with email addresses",
+      "request": {
+        "urlPathTemplate": "/group.create",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"88bebce7-6cbb-4666-96f9-5c02d73e6661\",\n  \"chatId\": \"\",\n  \"name\": \"Engineering Team\",\n  \"type\": \"standard\",\n  \"accessMode\": \"public\",\n  \"groupManagement\": \"groupAdminsOnly\",\n  \"enforceThreadedMode\": true,\n  \"dateCreated\": \"2026-01-21T10:30:00Z\",\n  \"imageUrl\": \"imageUrl\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "6944734f-b53f-4e7f-8204-8e24e79f0ef2",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "28d1b101-20d5-4055-959d-728e798f6f66",
+      "name": "Rename a group - default",
+      "request": {
+        "urlPathTemplate": "/group.rename",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "28d1b101-20d5-4055-959d-728e798f6f66",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "91fdc068-3414-46e1-8065-2f65c6dd2b1a",
+      "name": "Archive a group - default",
+      "request": {
+        "urlPathTemplate": "/group.archive",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "91fdc068-3414-46e1-8065-2f65c6dd2b1a",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "8f990d74-167a-4ca9-89f7-17ebb43d345b",
+      "name": "List group members - default",
+      "request": {
+        "urlPathTemplate": "/group.members",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "queryParameters": {
+          "id": {
+            "equalTo": "id"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"members\": [\n    {\n      \"userId\": \"709b8a57-70bc-427a-b6f0-b16ba5297f8c\",\n      \"role\": \"member\"\n    },\n    {\n      \"userId\": \"af6663d5-0f37-4105-95df-4fea20ef7c7c\",\n      \"role\": \"admin\"\n    },\n    {\n      \"userId\": \"f589a8cb-78ac-493e-8719-0fa8a22f65e0\",\n      \"role\": \"member\"\n    }\n  ],\n  \"nextCursor\": \"YzE6ZjU4OWE4Y2ItNzhhYy00OTNlLTg3MTktMGZhOGEyMmY2NWUw\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "8f990d74-167a-4ca9-89f7-17ebb43d345b",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "cbd21ab8-3b78-44ca-83ff-0deb2f475ca0",
+      "name": "Add group members - Add members by user ID",
+      "request": {
+        "urlPathTemplate": "/group.add",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "cbd21ab8-3b78-44ca-83ff-0deb2f475ca0",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "437f3cac-a1bb-470c-88b1-53e88646c300",
+      "name": "Join a group - default",
+      "request": {
+        "urlPathTemplate": "/group.join",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"88bebce7-6cbb-4666-96f9-5c02d73e6661\",\n  \"chatId\": \"757dfe66-37b4-4772-baa5-8c86ec68c176\",\n  \"name\": \"Engineering Team\",\n  \"type\": \"standard\",\n  \"accessMode\": \"public\",\n  \"groupManagement\": \"allMembers\",\n  \"enforceThreadedMode\": true,\n  \"dateCreated\": \"2026-01-21T10:30:00Z\",\n  \"imageUrl\": \"imageUrl\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "437f3cac-a1bb-470c-88b1-53e88646c300",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "fe1cde7e-7fed-43e6-84f7-8cd86298d49d",
+      "name": "Remove group members - Remove members by user ID",
+      "request": {
+        "urlPathTemplate": "/group.remove",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "fe1cde7e-7fed-43e6-84f7-8cd86298d49d",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "72a9c046-a54a-4315-9baa-a9847f8eb7fd",
+      "name": "List groups (Legacy) - default",
+      "request": {
+        "urlPathTemplate": "/groups.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "[\n  {\n    \"addressId\": \"88bebce7-6cbb-4666-96f9-5c02d73e6661\",\n    \"roamId\": 12345,\n    \"accountId\": 67890,\n    \"groupType\": \"roam\",\n    \"name\": \"All Hands\",\n    \"accessMode\": \"public\",\n    \"groupManagement\": \"groupAdminsOnly\",\n    \"enforceThreadedMode\": false,\n    \"dateCreated\": \"2025-01-15T10:00:00Z\",\n    \"imageUrl\": \"https://ro.am/card-images/88bebce7-6cbb-4666-96f9-5c02d73e6661\"\n  },\n  {\n    \"addressId\": \"c6040d77-a61c-4834-a939-fe3e687ffd72\",\n    \"roamId\": 12345,\n    \"accountId\": 67890,\n    \"groupType\": \"group\",\n    \"name\": \"Engineering Team\",\n    \"accessMode\": \"public\",\n    \"groupManagement\": \"allMembers\",\n    \"enforceThreadedMode\": true,\n    \"dateCreated\": \"2025-02-20T14:30:00Z\",\n    \"imageUrl\": \"https://ro.am/card-images/c6040d77-a61c-4834-a939-fe3e687ffd72\"\n  }\n]",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "72a9c046-a54a-4315-9baa-a9847f8eb7fd",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "dd865cd3-d733-472d-993d-58c309be20d5",
+      "name": "Access token info - default",
+      "request": {
+        "urlPathTemplate": "/token.info",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"user\": {\n    \"id\": \"b893c426-6d54-4d9a-8e71-6bd53b26124e\",\n    \"name\": \"My Bot\",\n    \"imageUrl\": \"https://ro.am/card-images/b893c426-6d54-4d9a-8e71-6bd53b26124e\",\n    \"email\": \"email\"\n  },\n  \"bot\": {\n    \"id\": \"id\",\n    \"name\": \"name\",\n    \"imageUrl\": \"imageUrl\"\n  },\n  \"clientId\": \"8f3a1c2e-9b4d-4f6a-bc11-2d3e4f5a6b7c\",\n  \"scopes\": [\n    \"chat:read\",\n    \"chat:write\",\n    \"user:read\",\n    \"user:read.email\"\n  ],\n  \"roam\": {\n    \"id\": \"12QJUIKR29\",\n    \"name\": \"Acme Corp\",\n    \"imageUrl\": \"https://ro.am/card-images/b5313458-1363-4832-a408-deaf740ad014\",\n    \"iconUrl\": \"https://ro.am/card-images/08705e4f-7e32-4a5f-8f57-39e24eaadcbd\"\n  }\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "dd865cd3-d733-472d-993d-58c309be20d5",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "006fac3f-d2d6-4779-9824-636e9cfa7b40",
+      "name": "Revoke access token - default",
+      "request": {
+        "urlPathTemplate": "/token.revoke",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "006fac3f-d2d6-4779-9824-636e9cfa7b40",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "26cb7e22-5b48-4517-9cef-f18d1014711e",
+      "name": "List webhook subscriptions - default",
+      "request": {
+        "urlPathTemplate": "/webhook.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"webhooks\": [\n    {\n      \"id\": \"19c6401f-6d02-4d8c-87c5-9fc45f02f4b5\",\n      \"event\": \"chat.message\",\n      \"url\": \"https://example.com/hooks/messages\",\n      \"filter\": {\n        \"mention\": true\n      },\n      \"dynamic\": true,\n      \"created\": \"2026-03-12T17:42:18Z\",\n      \"lastSuccessAt\": \"2026-08-17T14:02:11Z\",\n      \"failStreakStartedAt\": \"2024-01-15T09:30:00Z\",\n      \"disabledAt\": \"2024-01-15T09:30:00Z\"\n    },\n    {\n      \"id\": \"a7f8e3d2-1b5c-4e9f-8d2a-6f0b1c3d4e5f\",\n      \"event\": \"chat.reaction\",\n      \"url\": \"https://example.com/hooks/reactions\",\n      \"dynamic\": false,\n      \"created\": \"2026-01-04T09:13:00Z\",\n      \"lastSuccessAt\": \"2026-08-15T09:00:00Z\",\n      \"failStreakStartedAt\": \"2026-08-16T09:00:00Z\",\n      \"disabledAt\": \"2026-08-17T09:00:00Z\"\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "26cb7e22-5b48-4517-9cef-f18d1014711e",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "7338ae1c-efab-4860-aca0-57187e8ff9f4",
+      "name": "Subscribe to an event webhook - Subscribe to chat message events",
+      "request": {
+        "urlPathTemplate": "/webhook.subscribe",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"id\": \"19c6401f-6d02-4d8c-87c5-9fc45f02f4b5\",\n  \"event\": \"chat.message\",\n  \"url\": \"https://example.com/hooks/messages\",\n  \"filter\": {\n    \"chatType\": \"dm\",\n    \"mention\": true,\n    \"names\": [\n      \"names\"\n    ],\n    \"hasVideo\": true,\n    \"eventId\": \"eventId\",\n    \"status\": \"invited\"\n  },\n  \"dynamic\": true,\n  \"created\": \"2024-01-15T09:30:00Z\",\n  \"lastSuccessAt\": \"2024-01-15T09:30:00Z\",\n  \"failStreakStartedAt\": \"2024-01-15T09:30:00Z\",\n  \"disabledAt\": \"2024-01-15T09:30:00Z\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "7338ae1c-efab-4860-aca0-57187e8ff9f4",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "a0f0d0bd-f661-4094-8b21-b8fedeab4e32",
+      "name": "Unsubscribe from an event webhook - default",
+      "request": {
+        "urlPathTemplate": "/webhook.unsubscribe",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "a0f0d0bd-f661-4094-8b21-b8fedeab4e32",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "8ae52f76-a4d5-4075-894e-3c8ecb11fa32",
+      "name": "List failed webhook deliveries - default",
+      "request": {
+        "urlPathTemplate": "/webhook.deliveries",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"deliveries\": [\n    {\n      \"timestamp\": \"2026-07-19T18:23:45Z\",\n      \"webhookId\": \"19c6401f-6d02-4d8c-87c5-9fc45f02f4b5\",\n      \"event\": \"chat.message\",\n      \"url\": \"https://example.com/hooks/messages\",\n      \"statusCode\": 0,\n      \"error\": \"timeout\",\n      \"response\": \"response\",\n      \"durationMs\": 3000,\n      \"messageId\": \"messageId\",\n      \"success\": false\n    },\n    {\n      \"timestamp\": \"2026-07-19T18:22:10Z\",\n      \"webhookId\": \"19c6401f-6d02-4d8c-87c5-9fc45f02f4b5\",\n      \"event\": \"chat.message\",\n      \"url\": \"https://example.com/hooks/messages\",\n      \"statusCode\": 503,\n      \"error\": \"http_5xx\",\n      \"response\": \"upstream unavailable\",\n      \"durationMs\": 187,\n      \"messageId\": \"messageId\",\n      \"success\": false\n    }\n  ],\n  \"nextCursor\": \"nextCursor\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "8ae52f76-a4d5-4075-894e-3c8ecb11fa32",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    }
+  ],
+  "meta": {
+    "total": 63
+  }
+}
