@@ -9,6 +9,8 @@ regeneration will not overwrite:
 
 - `webhooks/` — signature verification. Security-relevant; tests live next to
   the source. Do not replace this with the generated helper.
+- `tests/` — contract tests (pagination, Roam-Version, retries, webhook
+  verify as a consumer). See `tests/README.md`.
 - `README.md`, `LICENSE`, `RELEASING.md`, `AGENTS.md`
 - `.github/`, `.gitignore`, `.fernignore`
 
@@ -28,7 +30,7 @@ in this repo.
 ```bash
 go build ./...
 go vet ./...
-go test ./webhooks/...
+go test ./webhooks/... ./tests/...
 ```
 
 Never `go test ./...`. The generator emits WireMock tests that dial

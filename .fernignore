@@ -15,6 +15,11 @@
 # entry alone.
 webhooks/
 
+# Hand-written contract tests. HTTP is faked at Client.Do against the real
+# default host; a regeneration that breaks pagination, retries, or
+# Roam-Version must fail here rather than silently shipping.
+tests/
+
 # Guide samples copied in by CI for a compile check, never committed from
 # that workflow. Kept here so a local copy cannot be deleted by --delete.
 examples/
