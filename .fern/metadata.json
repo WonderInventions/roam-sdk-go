@@ -1,0 +1,17 @@
+{
+  "cliVersion": "5.82.0",
+  "generatorName": "fernapi/fern-go-sdk",
+  "generatorVersion": "1.57.9",
+  "generatorConfig": {
+    "enableRequestBodyPagination": true,
+    "module": {
+      "version": "1.22",
+      "path": "ro.am/roamhq"
+    },
+    "packageName": "roamhq"
+  },
+  "originGitCommit": "65593819303487ba4d097547fede07eb9db8278b",
+  "originGitCommitIsDirty": false,
+  "invokedBy": "ci",
+  "ciProvider": "github"
+}
