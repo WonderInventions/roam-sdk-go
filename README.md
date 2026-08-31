@@ -71,6 +71,7 @@ Everything listed in [`.fernignore`](.fernignore) is hand-maintained:
 | Path | What it is |
 | --- | --- |
 | `webhooks/` | Hand-written signature verification, imported as `ro.am/roamhq/webhooks`. |
+| `tests/` | Contract tests. See [`tests/README.md`](tests/README.md). |
 | `.github/` | CI. |
 | `README.md`, `LICENSE` | This file, and the license. |
 
@@ -85,7 +86,7 @@ code — fixing it there fixes the docs site and every SDK at once. Report it vi
 ```bash
 go build ./...
 go vet ./...
-go test ./webhooks/...
+go test ./webhooks/... ./tests/...
 ```
 
 Do not `go test ./...`. Fern emits WireMock-backed tests that expect a mock
