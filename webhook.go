@@ -97,8 +97,12 @@ type WebhookSubscriptionRequest struct {
 	// Destination URL for webhook deliveries (max 1024 characters). HTTPS is required outside local environments.
 	URL string `json:"url" url:"-"`
 	// Event to subscribe to.
-	Event  WebhookSubscriptionRequestEvent `json:"event" url:"-"`
-	Filter *WebhookSubscriptionFilter      `json:"filter,omitempty" url:"-"`
+	Event WebhookSubscriptionRequestEvent `json:"event" url:"-"`
+	// Optional event-specific filter. Which keys are valid depends on `event`
+	// (see the schema). Omit to receive every occurrence; `{}` and `null` are
+	// rejected rather than treated as "omitted". Example for DMs only:
+	// `{"chatType": "dm"}`.
+	Filter *WebhookSubscriptionFilter `json:"filter,omitempty" url:"-"`
 	// Optional [API version](https://developer.ro.am/docs/guides/api-versioning) (`YYYY-MM-DD`) to pin
 	// this subscription's payload shape to. When omitted, the subscription is
 	// frozen at your integration's default version. Unsupported values return
@@ -474,7 +478,20 @@ func (w WebhookEvent) Ptr() *WebhookEvent {
 	return &w
 }
 
-// Event-specific filter to limit webhook notifications. Different properties apply to different events.
+// Event-specific filter passed as `filter` on `/webhook.subscribe`. Omit the
+// field to receive every occurrence of the event. A present but empty filter is
+// rejected — both `{}` and `null`.
+//
+// Which properties apply depends on `event`:
+//
+// - `chat.message`: `chatType` (`dm` or `group`) and/or `mention`
+// - `chat.reaction`: `names`
+// - `meeting.ended`: `hasVideo` (`true` only)
+// - `onair.event.created` / `updated` / `canceled` and `onair.guest.added`: `eventId`
+// - `onair.guest.rsvp`: `eventId` and/or `status`
+// - all other events: do not accept a filter
+//
+// Example — DMs only: `{"chatType": "dm"}`.
 var (
 	webhookSubscriptionFilterFieldChatType = big.NewInt(1 << 0)
 	webhookSubscriptionFilterFieldMention  = big.NewInt(1 << 1)
@@ -485,9 +502,14 @@ var (
 )
 
 type WebhookSubscriptionFilter struct {
-	// For `chat.message`: restrict to direct messages (`dm`) or group messages (`group`).
+	// For `chat.message`: restrict to direct messages (`dm`, 1:1 and
+	// multi-person) or group messages (`group`, including meeting channels).
+	// Same vocabulary as `data.chatType` on the delivered payload.
 	ChatType *WebhookSubscriptionFilterChatType `json:"chatType,omitempty" url:"chatType,omitempty"`
-	// For `chat.message`: restrict to messages that @mention your app.
+	// For `chat.message`: restrict to messages that @mention your app. Only
+	// `true` constrains anything, so `{"mention": false}` on its own is
+	// rejected like `{}`; alongside another key (`{"chatType": "dm",
+	// "mention": false}`) it is accepted and ignored.
 	Mention *bool `json:"mention,omitempty" url:"mention,omitempty"`
 	// For `chat.reaction`: restrict to events where the changed reaction is one of these names (e.g. 'thumbs_up', 'heart'), matching the `name` field of `/reaction.add` and `/reaction.list`.
 	Names []string `json:"names,omitempty" url:"names,omitempty"`
@@ -645,7 +667,9 @@ func (w *WebhookSubscriptionFilter) String() string {
 	return fmt.Sprintf("%#v", w)
 }
 
-// For `chat.message`: restrict to direct messages (`dm`) or group messages (`group`).
+// For `chat.message`: restrict to direct messages (`dm`, 1:1 and
+// multi-person) or group messages (`group`, including meeting channels).
+// Same vocabulary as `data.chatType` on the delivered payload.
 type WebhookSubscriptionFilterChatType string
 
 const (

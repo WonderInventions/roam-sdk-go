@@ -52,6 +52,10 @@ func NewClient(options *core.RequestOptions) *Client {
 // See [External activity](https://developer.ro.am/docs/guides/user-activity) for display, DND,
 // TTL, stacking, and where the indicator appears on the map.
 //
+// Identify the user with `userId`: a bare UUID, tagged `U-…` ID, or
+// ASCII email (same convention as `group.create` members). Third-party
+// systems that only have an email do not need a UUID lookup first.
+//
 // **Access:** Organization and Personal. Organization tokens may target
 // any user in the workspace. Personal tokens (OAuth or PAT) may target
 // only the token owner.
@@ -62,7 +66,7 @@ func NewClient(options *core.RequestOptions) *Client {
 // Example:
 //
 //	request := &roamhq.UserActivitySetRequest{
-//	    UserID: "0cc74785-e31e-4403-aa5e-0cc7c1897e66",
+//	    UserID: "ada@example.com",
 //	    ExternalID: "justcall:call:CA123",
 //	    Display: &roamhq.UserActivityDisplay{
 //	        Emoji: "📞",
@@ -120,7 +124,7 @@ func (c *Client) UserActivitySet(
 // Example:
 //
 //	request := &roamhq.UserActivityClearRequest{
-//	    UserID: "0cc74785-e31e-4403-aa5e-0cc7c1897e66",
+//	    UserID: "ada@example.com",
 //	    ExternalID: "justcall:call:CA123",
 //	}
 //	client.Users.UserActivityClear(

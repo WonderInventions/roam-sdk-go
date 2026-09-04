@@ -254,8 +254,10 @@ var (
 )
 
 type UserActivityDisplay struct {
-	// Badge shown on the user's seat. Required. At most 16 Unicode code
-	// points, so ZWJ sequences (family emoji, flags) stay valid.
+	// Badge shown on the user's seat. Required. Must be a single emoji —
+	// a text blurb or several emoji is `invalid_parameter`. ZWJ sequences
+	// (family, flags, keycaps, skin tones) count as one. At most 16
+	// Unicode code points (the storage cap).
 	Emoji string `json:"emoji" url:"emoji"`
 	// Required hover-tooltip title. At most 140 Unicode code points.
 	Title string `json:"title" url:"title"`
@@ -534,8 +536,9 @@ var (
 )
 
 type UserActivityClearRequest struct {
-	// Target user. Bare or tagged UUID. Personal tokens may only
-	// pass their own user.
+	// Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+	// (same convention as `group.create` members). Personal
+	// tokens may only pass their own user.
 	UserID string `json:"userId" url:"-"`
 	// The `externalId` previously passed to `user.activity.set`.
 	ExternalID string `json:"externalId" url:"-"`
@@ -591,8 +594,9 @@ var (
 )
 
 type UserActivityListRequest struct {
-	// Target user. Bare or tagged UUID. Personal tokens may only pass
-	// their own user.
+	// Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+	// (same convention as `group.create` members). Personal tokens
+	// may only pass their own user.
 	UserID string `json:"-" url:"userId"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -624,8 +628,11 @@ var (
 )
 
 type UserActivitySetRequest struct {
-	// Target user. Bare or tagged UUID. Personal tokens may only
-	// pass their own user.
+	// Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+	// (same convention as `group.create` members). Personal
+	// tokens may only pass their own user. Does not require
+	// `user:read.email` — email is an identifier, not a
+	// disclosure.
 	UserID string `json:"userId" url:"-"`
 	// Caller-chosen session id, unique per integration and user.
 	// Re-using it upserts the existing row (heartbeat). At most

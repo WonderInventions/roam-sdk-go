@@ -728,8 +728,8 @@
       "postServeActions": []
     },
     {
-      "id": "4dc0326f-1f03-49f5-8003-5996ca246ec5",
-      "name": "Set a user's external activity - default",
+      "id": "e5a187d6-9723-4bec-b927-a2a7d33cac35",
+      "name": "Set a user's external activity - Identify the user by email",
       "request": {
         "urlPathTemplate": "/user.activity.set",
         "method": "POST",
@@ -746,7 +746,7 @@
           "Content-Type": "application/json"
         }
       },
-      "uuid": "4dc0326f-1f03-49f5-8003-5996ca246ec5",
+      "uuid": "e5a187d6-9723-4bec-b927-a2a7d33cac35",
       "persistent": true,
       "priority": 3,
       "metadata": {
@@ -1840,6 +1840,131 @@
       "postServeActions": []
     },
     {
+      "id": "5a1903db-ceed-476d-af97-7e0e0bd455ca",
+      "name": "Grant a Guest Badge - Organization key — host by UUID",
+      "request": {
+        "urlPathTemplate": "/guest.badge.create",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"email\": \"alex@client.example\",\n  \"userId\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\",\n  \"hostUserId\": \"3f1c0b2a-8d4e-4c91-9a7b-2e6f1d8c0a11\",\n  \"visitPermission\": true,\n  \"acknowledged\": false\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "5a1903db-ceed-476d-af97-7e0e0bd455ca",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "338b50e7-cf70-4b34-997d-770ee17516f1",
+      "name": "List Guest Badges - default",
+      "request": {
+        "urlPathTemplate": "/guest.badge.list",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"guestBadges\": [\n    {\n      \"email\": \"alex@client.example\",\n      \"userId\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\",\n      \"hostUserId\": \"3f1c0b2a-8d4e-4c91-9a7b-2e6f1d8c0a11\",\n      \"visitPermission\": true,\n      \"acknowledged\": false\n    }\n  ],\n  \"nextCursor\": \"nextCursor\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "338b50e7-cf70-4b34-997d-770ee17516f1",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
+      "id": "a4d8d9c1-77a0-4a93-b904-8b40d8e07189",
+      "name": "Update a Guest Badge - Turn off map visit permission",
+      "request": {
+        "urlPathTemplate": "/guest.badge.update",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"email\": \"alex@client.example\",\n  \"userId\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\",\n  \"hostUserId\": \"3f1c0b2a-8d4e-4c91-9a7b-2e6f1d8c0a11\",\n  \"visitPermission\": false,\n  \"acknowledged\": false\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "a4d8d9c1-77a0-4a93-b904-8b40d8e07189",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "2992048b-068b-4c9b-a597-1a447b5d8308",
+      "name": "Revoke a Guest Badge - Unique host — hostUserId omitted",
+      "request": {
+        "urlPathTemplate": "/guest.badge.revoke",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"revoked\": true\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "2992048b-068b-4c9b-a597-1a447b5d8308",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
       "id": "dd865cd3-d733-472d-993d-58c309be20d5",
       "name": "Access token info - default",
       "request": {
@@ -1916,7 +2041,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"webhooks\": [\n    {\n      \"id\": \"19c6401f-6d02-4d8c-87c5-9fc45f02f4b5\",\n      \"event\": \"chat.message\",\n      \"url\": \"https://example.com/hooks/messages\",\n      \"filter\": {\n        \"mention\": true\n      },\n      \"dynamic\": true,\n      \"created\": \"2026-03-12T17:42:18Z\",\n      \"lastSuccessAt\": \"2026-08-17T14:02:11Z\",\n      \"failStreakStartedAt\": \"2024-01-15T09:30:00Z\",\n      \"disabledAt\": \"2024-01-15T09:30:00Z\"\n    },\n    {\n      \"id\": \"a7f8e3d2-1b5c-4e9f-8d2a-6f0b1c3d4e5f\",\n      \"event\": \"chat.reaction\",\n      \"url\": \"https://example.com/hooks/reactions\",\n      \"dynamic\": false,\n      \"created\": \"2026-01-04T09:13:00Z\",\n      \"lastSuccessAt\": \"2026-08-15T09:00:00Z\",\n      \"failStreakStartedAt\": \"2026-08-16T09:00:00Z\",\n      \"disabledAt\": \"2026-08-17T09:00:00Z\"\n    }\n  ]\n}",
+        "body": "{\n  \"webhooks\": [\n    {\n      \"id\": \"19c6401f-6d02-4d8c-87c5-9fc45f02f4b5\",\n      \"event\": \"chat.message\",\n      \"url\": \"https://example.com/hooks/messages\",\n      \"filter\": {\n        \"chatType\": \"dm\"\n      },\n      \"dynamic\": true,\n      \"created\": \"2026-03-12T17:42:18Z\",\n      \"lastSuccessAt\": \"2026-08-17T14:02:11Z\",\n      \"failStreakStartedAt\": \"2024-01-15T09:30:00Z\",\n      \"disabledAt\": \"2024-01-15T09:30:00Z\"\n    },\n    {\n      \"id\": \"a7f8e3d2-1b5c-4e9f-8d2a-6f0b1c3d4e5f\",\n      \"event\": \"chat.reaction\",\n      \"url\": \"https://example.com/hooks/reactions\",\n      \"dynamic\": false,\n      \"created\": \"2026-01-04T09:13:00Z\",\n      \"lastSuccessAt\": \"2026-08-15T09:00:00Z\",\n      \"failStreakStartedAt\": \"2026-08-16T09:00:00Z\",\n      \"disabledAt\": \"2026-08-17T09:00:00Z\"\n    }\n  ]\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -1935,8 +2060,8 @@
       "postServeActions": []
     },
     {
-      "id": "7338ae1c-efab-4860-aca0-57187e8ff9f4",
-      "name": "Subscribe to an event webhook - Subscribe to chat message events",
+      "id": "4e424db4-c01b-48cb-bbd2-db6a1c5ea7d2",
+      "name": "Subscribe to an event webhook - Subscribe to every message (no filter)",
       "request": {
         "urlPathTemplate": "/webhook.subscribe",
         "method": "POST",
@@ -1953,7 +2078,7 @@
           "Content-Type": "application/json"
         }
       },
-      "uuid": "7338ae1c-efab-4860-aca0-57187e8ff9f4",
+      "uuid": "4e424db4-c01b-48cb-bbd2-db6a1c5ea7d2",
       "persistent": true,
       "priority": 3,
       "metadata": {
@@ -2030,6 +2155,6 @@
     }
   ],
   "meta": {
-    "total": 63
+    "total": 67
   }
 }

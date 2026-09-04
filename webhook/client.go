@@ -79,7 +79,23 @@ func (c *Client) List(
 // Roam does not probe the destination URL when you subscribe — the
 // subscription is created immediately and the first delivery is a real event.
 //
-// See the [Webhooks overview](https://developer.ro.am/docs/webhooks/webhooks) for the full list of event names and their filters.
+// Optional `filter` limits which occurrences are delivered. Which keys are
+// valid depends on `event` — see that event's page and the
+// [Event Filters](https://developer.ro.am/docs/webhooks/webhooks#event-filters) table. Omit
+// `filter` to receive every occurrence. An empty object (`{}`) is rejected,
+// as is a filter that does not apply to the event.
+//
+// **DMs only:**
+//
+// ```json
+//
+//	{
+//	  "url": "https://example.com/hooks/messages",
+//	  "event": "chat.message",
+//	  "filter": { "chatType": "dm" }
+//	}
+//
+// ```
 //
 // **Required scope:** `webhook:write`
 //
@@ -88,11 +104,6 @@ func (c *Client) List(
 //	request := &roamhq.WebhookSubscriptionRequest{
 //	    URL: "https://example.com/hooks/messages",
 //	    Event: roamhq.WebhookSubscriptionRequestEventChatMessage,
-//	    Filter: &roamhq.WebhookSubscriptionFilter{
-//	        Mention: roamhq.Bool(
-//	            true,
-//	        ),
-//	    },
 //	}
 //	client.Webhook.Subscribe(
 //	    context.TODO(),
