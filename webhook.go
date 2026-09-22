@@ -87,23 +87,38 @@ func (d *DeliveriesWebhookRequest) SetCursor(cursor *string) {
 }
 
 var (
-	webhookSubscriptionRequestFieldURL        = big.NewInt(1 << 0)
-	webhookSubscriptionRequestFieldEvent      = big.NewInt(1 << 1)
-	webhookSubscriptionRequestFieldFilter     = big.NewInt(1 << 2)
-	webhookSubscriptionRequestFieldAPIVersion = big.NewInt(1 << 3)
+	webhookSubscriptionRequestFieldURL         = big.NewInt(1 << 0)
+	webhookSubscriptionRequestFieldEvent       = big.NewInt(1 << 1)
+	webhookSubscriptionRequestFieldFilter      = big.NewInt(1 << 2)
+	webhookSubscriptionRequestFieldAPIVersion  = big.NewInt(1 << 3)
+	webhookSubscriptionRequestFieldDestination = big.NewInt(1 << 4)
 )
 
 type WebhookSubscriptionRequest struct {
 	// Destination URL for webhook deliveries (max 1024 characters). HTTPS is required outside local environments.
 	URL string `json:"url" url:"-"`
 	// Event to subscribe to.
-	Event  WebhookSubscriptionRequestEvent `json:"event" url:"-"`
-	Filter *WebhookSubscriptionFilter      `json:"filter,omitempty" url:"-"`
+	Event WebhookSubscriptionRequestEvent `json:"event" url:"-"`
+	// Optional event-specific filter. Which keys are valid depends on `event`
+	// (see the schema). Omit to receive every occurrence; `{}` and `null` are
+	// rejected rather than treated as "omitted". Example for DMs only:
+	// `{"chatType": "dm"}`.
+	Filter *WebhookSubscriptionFilter `json:"filter,omitempty" url:"-"`
 	// Optional [API version](https://developer.ro.am/docs/guides/api-versioning) (`YYYY-MM-DD`) to pin
 	// this subscription's payload shape to. When omitted, the subscription is
 	// frozen at your integration's default version. Unsupported values return
 	// `400`.
 	APIVersion *string `json:"apiVersion,omitempty" url:"-"`
+	// Optional delivery authentication. Omit for Standard Webhooks signed with
+	// the API client's `whsec_`. Set `type` to `grok_bot` to deliver to a
+	// [Grok Bot](https://developer.ro.am/docs/integrations/grok) webhook-routine URL: Roam signs with
+	// the routine's sender key (`Authorization: Bearer` plus
+	// `X-Grok-Signature`) or, if `token` is a `whsec_…` Standard Webhooks
+	// secret, uses that secret instead of the API client's. The token is
+	// write-only — subscribe and list responses echo `destination.type` only.
+	// Re-subscribe without this field leaves existing destination auth
+	// unchanged; send `"type": ""` to clear it.
+	Destination *WebhookSubscriptionRequestDestination `json:"destination,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -144,6 +159,13 @@ func (w *WebhookSubscriptionRequest) SetAPIVersion(apiVersion *string) {
 	w.require(webhookSubscriptionRequestFieldAPIVersion)
 }
 
+// SetDestination sets the Destination field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WebhookSubscriptionRequest) SetDestination(destination *WebhookSubscriptionRequestDestination) {
+	w.Destination = destination
+	w.require(webhookSubscriptionRequestFieldDestination)
+}
+
 func (w *WebhookSubscriptionRequest) UnmarshalJSON(data []byte) error {
 	type unmarshaler WebhookSubscriptionRequest
 	var body unmarshaler
@@ -170,11 +192,12 @@ var (
 	webhookFieldEvent               = big.NewInt(1 << 1)
 	webhookFieldURL                 = big.NewInt(1 << 2)
 	webhookFieldFilter              = big.NewInt(1 << 3)
-	webhookFieldDynamic             = big.NewInt(1 << 4)
-	webhookFieldCreated             = big.NewInt(1 << 5)
-	webhookFieldLastSuccessAt       = big.NewInt(1 << 6)
-	webhookFieldFailStreakStartedAt = big.NewInt(1 << 7)
-	webhookFieldDisabledAt          = big.NewInt(1 << 8)
+	webhookFieldDestination         = big.NewInt(1 << 4)
+	webhookFieldDynamic             = big.NewInt(1 << 5)
+	webhookFieldCreated             = big.NewInt(1 << 6)
+	webhookFieldLastSuccessAt       = big.NewInt(1 << 7)
+	webhookFieldFailStreakStartedAt = big.NewInt(1 << 8)
+	webhookFieldDisabledAt          = big.NewInt(1 << 9)
 )
 
 type Webhook struct {
@@ -186,6 +209,10 @@ type Webhook struct {
 	URL string `json:"url" url:"url"`
 	// Event-specific filter applied to the subscription.
 	Filter *WebhookSubscriptionFilter `json:"filter,omitempty" url:"filter,omitempty"`
+	// Delivery authentication. Omitted for Standard Webhooks (the default).
+	// `type` is `grok_bot` when the subscription was created with
+	// `destination.type=grok_bot`. The sender key is never returned.
+	Destination *WebhookDestination `json:"destination,omitempty" url:"destination,omitempty"`
 	// `true` if the subscription was created via `/webhook.subscribe`.
 	// `false` if it was configured statically in the Roam Administration UI.
 	Dynamic bool `json:"dynamic" url:"dynamic"`
@@ -236,6 +263,13 @@ func (w *Webhook) GetFilter() *WebhookSubscriptionFilter {
 		return nil
 	}
 	return w.Filter
+}
+
+func (w *Webhook) GetDestination() *WebhookDestination {
+	if w == nil {
+		return nil
+	}
+	return w.Destination
 }
 
 func (w *Webhook) GetDynamic() bool {
@@ -313,6 +347,13 @@ func (w *Webhook) SetURL(url string) {
 func (w *Webhook) SetFilter(filter *WebhookSubscriptionFilter) {
 	w.Filter = filter
 	w.require(webhookFieldFilter)
+}
+
+// SetDestination sets the Destination field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *Webhook) SetDestination(destination *WebhookDestination) {
+	w.Destination = destination
+	w.require(webhookFieldDestination)
 }
 
 // SetDynamic sets the Dynamic field and marks it as non-optional;
@@ -412,6 +453,112 @@ func (w *Webhook) String() string {
 	return fmt.Sprintf("%#v", w)
 }
 
+// Delivery authentication. Omitted for Standard Webhooks (the default).
+// `type` is `grok_bot` when the subscription was created with
+// `destination.type=grok_bot`. The sender key is never returned.
+var (
+	webhookDestinationFieldType = big.NewInt(1 << 0)
+)
+
+type WebhookDestination struct {
+	Type *WebhookDestinationType `json:"type,omitempty" url:"type,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (w *WebhookDestination) GetType() *WebhookDestinationType {
+	if w == nil {
+		return nil
+	}
+	return w.Type
+}
+
+func (w *WebhookDestination) GetExtraProperties() map[string]interface{} {
+	if w == nil {
+		return nil
+	}
+	return w.extraProperties
+}
+
+func (w *WebhookDestination) require(field *big.Int) {
+	if w.explicitFields == nil {
+		w.explicitFields = big.NewInt(0)
+	}
+	w.explicitFields.Or(w.explicitFields, field)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WebhookDestination) SetType(type_ *WebhookDestinationType) {
+	w.Type = type_
+	w.require(webhookDestinationFieldType)
+}
+
+func (w *WebhookDestination) UnmarshalJSON(data []byte) error {
+	type unmarshaler WebhookDestination
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*w = WebhookDestination(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *w)
+	if err != nil {
+		return err
+	}
+	w.extraProperties = extraProperties
+	w.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (w *WebhookDestination) MarshalJSON() ([]byte, error) {
+	type embed WebhookDestination
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*w),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, w.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (w *WebhookDestination) String() string {
+	if w == nil {
+		return "<nil>"
+	}
+	if len(w.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(w.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(w); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", w)
+}
+
+type WebhookDestinationType string
+
+const (
+	WebhookDestinationTypeGrokBot WebhookDestinationType = "grok_bot"
+)
+
+func NewWebhookDestinationTypeFromString(s string) (WebhookDestinationType, error) {
+	switch s {
+	case "grok_bot":
+		return WebhookDestinationTypeGrokBot, nil
+	}
+	var t WebhookDestinationType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (w WebhookDestinationType) Ptr() *WebhookDestinationType {
+	return &w
+}
+
 // Subscribed event name.
 type WebhookEvent string
 
@@ -474,7 +621,20 @@ func (w WebhookEvent) Ptr() *WebhookEvent {
 	return &w
 }
 
-// Event-specific filter to limit webhook notifications. Different properties apply to different events.
+// Event-specific filter passed as `filter` on `/webhook.subscribe`. Omit the
+// field to receive every occurrence of the event. A present but empty filter is
+// rejected — both `{}` and `null`.
+//
+// Which properties apply depends on `event`:
+//
+// - `chat.message`: `chatType` (`dm` or `group`) and/or `mention`
+// - `chat.reaction`: `names`
+// - `meeting.ended`: `hasVideo` (`true` only)
+// - `onair.event.created` / `updated` / `canceled` and `onair.guest.added`: `eventId`
+// - `onair.guest.rsvp`: `eventId` and/or `status`
+// - all other events: do not accept a filter
+//
+// Example — DMs only: `{"chatType": "dm"}`.
 var (
 	webhookSubscriptionFilterFieldChatType = big.NewInt(1 << 0)
 	webhookSubscriptionFilterFieldMention  = big.NewInt(1 << 1)
@@ -485,9 +645,14 @@ var (
 )
 
 type WebhookSubscriptionFilter struct {
-	// For `chat.message`: restrict to direct messages (`dm`) or group messages (`group`).
+	// For `chat.message`: restrict to direct messages (`dm`, 1:1 and
+	// multi-person) or group messages (`group`, including meeting channels).
+	// Same vocabulary as `data.chatType` on the delivered payload.
 	ChatType *WebhookSubscriptionFilterChatType `json:"chatType,omitempty" url:"chatType,omitempty"`
-	// For `chat.message`: restrict to messages that @mention your app.
+	// For `chat.message`: restrict to messages that @mention your app. Only
+	// `true` constrains anything, so `{"mention": false}` on its own is
+	// rejected like `{}`; alongside another key (`{"chatType": "dm",
+	// "mention": false}`) it is accepted and ignored.
 	Mention *bool `json:"mention,omitempty" url:"mention,omitempty"`
 	// For `chat.reaction`: restrict to events where the changed reaction is one of these names (e.g. 'thumbs_up', 'heart'), matching the `name` field of `/reaction.add` and `/reaction.list`.
 	Names []string `json:"names,omitempty" url:"names,omitempty"`
@@ -645,7 +810,9 @@ func (w *WebhookSubscriptionFilter) String() string {
 	return fmt.Sprintf("%#v", w)
 }
 
-// For `chat.message`: restrict to direct messages (`dm`) or group messages (`group`).
+// For `chat.message`: restrict to direct messages (`dm`, 1:1 and
+// multi-person) or group messages (`group`, including meeting channels).
+// Same vocabulary as `data.chatType` on the delivered payload.
 type WebhookSubscriptionFilterChatType string
 
 const (
@@ -1374,6 +1541,137 @@ func (l *ListWebhookResponseWebhooksItem) String() string {
 		return value
 	}
 	return fmt.Sprintf("%#v", l)
+}
+
+// Optional delivery authentication. Omit for Standard Webhooks signed with
+// the API client's `whsec_`. Set `type` to `grok_bot` to deliver to a
+// [Grok Bot](https://developer.ro.am/docs/integrations/grok) webhook-routine URL: Roam signs with
+// the routine's sender key (`Authorization: Bearer` plus
+// `X-Grok-Signature`) or, if `token` is a `whsec_…` Standard Webhooks
+// secret, uses that secret instead of the API client's. The token is
+// write-only — subscribe and list responses echo `destination.type` only.
+// Re-subscribe without this field leaves existing destination auth
+// unchanged; send `"type": ""` to clear it.
+var (
+	webhookSubscriptionRequestDestinationFieldType  = big.NewInt(1 << 0)
+	webhookSubscriptionRequestDestinationFieldToken = big.NewInt(1 << 1)
+)
+
+type WebhookSubscriptionRequestDestination struct {
+	// Delivery auth scheme.
+	Type WebhookSubscriptionRequestDestinationType `json:"type" url:"type"`
+	// Grok Bot sender key, or a `whsec_…` Standard Webhooks secret.
+	Token string `json:"token" url:"token"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (w *WebhookSubscriptionRequestDestination) GetType() WebhookSubscriptionRequestDestinationType {
+	if w == nil {
+		return ""
+	}
+	return w.Type
+}
+
+func (w *WebhookSubscriptionRequestDestination) GetToken() string {
+	if w == nil {
+		return ""
+	}
+	return w.Token
+}
+
+func (w *WebhookSubscriptionRequestDestination) GetExtraProperties() map[string]interface{} {
+	if w == nil {
+		return nil
+	}
+	return w.extraProperties
+}
+
+func (w *WebhookSubscriptionRequestDestination) require(field *big.Int) {
+	if w.explicitFields == nil {
+		w.explicitFields = big.NewInt(0)
+	}
+	w.explicitFields.Or(w.explicitFields, field)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WebhookSubscriptionRequestDestination) SetType(type_ WebhookSubscriptionRequestDestinationType) {
+	w.Type = type_
+	w.require(webhookSubscriptionRequestDestinationFieldType)
+}
+
+// SetToken sets the Token field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WebhookSubscriptionRequestDestination) SetToken(token string) {
+	w.Token = token
+	w.require(webhookSubscriptionRequestDestinationFieldToken)
+}
+
+func (w *WebhookSubscriptionRequestDestination) UnmarshalJSON(data []byte) error {
+	type unmarshaler WebhookSubscriptionRequestDestination
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*w = WebhookSubscriptionRequestDestination(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *w)
+	if err != nil {
+		return err
+	}
+	w.extraProperties = extraProperties
+	w.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (w *WebhookSubscriptionRequestDestination) MarshalJSON() ([]byte, error) {
+	type embed WebhookSubscriptionRequestDestination
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*w),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, w.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (w *WebhookSubscriptionRequestDestination) String() string {
+	if w == nil {
+		return "<nil>"
+	}
+	if len(w.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(w.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(w); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", w)
+}
+
+// Delivery auth scheme.
+type WebhookSubscriptionRequestDestinationType string
+
+const (
+	WebhookSubscriptionRequestDestinationTypeGrokBot WebhookSubscriptionRequestDestinationType = "grok_bot"
+)
+
+func NewWebhookSubscriptionRequestDestinationTypeFromString(s string) (WebhookSubscriptionRequestDestinationType, error) {
+	switch s {
+	case "grok_bot":
+		return WebhookSubscriptionRequestDestinationTypeGrokBot, nil
+	}
+	var t WebhookSubscriptionRequestDestinationType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (w WebhookSubscriptionRequestDestinationType) Ptr() *WebhookSubscriptionRequestDestinationType {
+	return &w
 }
 
 // Event to subscribe to.
