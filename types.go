@@ -435,3 +435,143 @@ func (e *Error) String() string {
 	}
 	return fmt.Sprintf("%#v", e)
 }
+
+// Out-of-office / "Will Return" status. A user can be `checkedIn` and still
+// have `willReturn` (multi-day Out of Roam) — key off the presence of this
+// object rather than `status` alone.
+//
+// On `user.info` / `user.list` (with `expand=status`) and `user.status.update`
+// webhooks, elapsed return times are omitted. On `user.status.set` the written
+// value is always returned.
+var (
+	willReturnFieldReturnTime = big.NewInt(1 << 0)
+	willReturnFieldReason     = big.NewInt(1 << 1)
+	willReturnFieldOutOfRoam  = big.NewInt(1 << 2)
+)
+
+type WillReturn struct {
+	// When the user is expected to return (RFC 3339).
+	ReturnTime time.Time `json:"returnTime" url:"returnTime"`
+	// Optional absence message (for example "On Vacation" or "Out to lunch").
+	// At most 128 Unicode code points.
+	Reason *string `json:"reason,omitempty" url:"reason,omitempty"`
+	// When true, multi-day Out of Roam that persists across check-ins. When
+	// false or omitted on a **read**, same-day Will Return Today.
+	//
+	// `user.status.set` defaults omitted `outOfRoam` to **true**. Will Return
+	// Today must send `outOfRoam: false` explicitly, and `returnTime` must be
+	// less than 10 hours from now.
+	OutOfRoam *bool `json:"outOfRoam,omitempty" url:"outOfRoam,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (w *WillReturn) GetReturnTime() time.Time {
+	if w == nil {
+		return time.Time{}
+	}
+	return w.ReturnTime
+}
+
+func (w *WillReturn) GetReason() *string {
+	if w == nil {
+		return nil
+	}
+	return w.Reason
+}
+
+func (w *WillReturn) GetOutOfRoam() *bool {
+	if w == nil {
+		return nil
+	}
+	return w.OutOfRoam
+}
+
+func (w *WillReturn) GetExtraProperties() map[string]interface{} {
+	if w == nil {
+		return nil
+	}
+	return w.extraProperties
+}
+
+func (w *WillReturn) require(field *big.Int) {
+	if w.explicitFields == nil {
+		w.explicitFields = big.NewInt(0)
+	}
+	w.explicitFields.Or(w.explicitFields, field)
+}
+
+// SetReturnTime sets the ReturnTime field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WillReturn) SetReturnTime(returnTime time.Time) {
+	w.ReturnTime = returnTime
+	w.require(willReturnFieldReturnTime)
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WillReturn) SetReason(reason *string) {
+	w.Reason = reason
+	w.require(willReturnFieldReason)
+}
+
+// SetOutOfRoam sets the OutOfRoam field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WillReturn) SetOutOfRoam(outOfRoam *bool) {
+	w.OutOfRoam = outOfRoam
+	w.require(willReturnFieldOutOfRoam)
+}
+
+func (w *WillReturn) UnmarshalJSON(data []byte) error {
+	type embed WillReturn
+	var unmarshaler = struct {
+		embed
+		ReturnTime *internal.DateTime `json:"returnTime"`
+	}{
+		embed: embed(*w),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*w = WillReturn(unmarshaler.embed)
+	w.ReturnTime = unmarshaler.ReturnTime.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *w)
+	if err != nil {
+		return err
+	}
+	w.extraProperties = extraProperties
+	w.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (w *WillReturn) MarshalJSON() ([]byte, error) {
+	type embed WillReturn
+	var marshaler = struct {
+		embed
+		ReturnTime *internal.DateTime `json:"returnTime"`
+	}{
+		embed:      embed(*w),
+		ReturnTime: internal.NewDateTime(w.ReturnTime),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, w.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (w *WillReturn) String() string {
+	if w == nil {
+		return "<nil>"
+	}
+	if len(w.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(w.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(w); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", w)
+}

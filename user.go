@@ -7,7 +7,6 @@ import (
 	fmt "fmt"
 	big "math/big"
 	internal "ro.am/roamhq/internal"
-	time "time"
 )
 
 var (
@@ -21,7 +20,7 @@ type InfoUserRequest struct {
 	ID *string `json:"-" url:"id,omitempty"`
 	// The user's email address. Mutually exclusive with `id`. Requires `user:read.email` scope.
 	Email *string `json:"-" url:"email,omitempty"`
-	// Comma-separated list of additional fields to include. Supported: `status`, `available` (each requires `user:read.status`). Expanding `status` also returns `willReturn` when the user has a future out-of-office entry.
+	// Comma-separated list of additional fields to include. Supported: `status`, `available` (each requires `user:read.status`). Expanding `status` also returns `willReturn` when the user has a future out-of-office entry. Write that field with `user.status.set` / `.clear`.
 	Expand *string `json:"-" url:"expand,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -76,7 +75,7 @@ type ListUserRequest struct {
 	Limit *int `json:"-" url:"limit,omitempty"`
 	// Opaque directory cursor from a previous response's `nextCursor`. Cannot be combined with `ids`.
 	Cursor *string `json:"-" url:"cursor,omitempty"`
-	// Comma-separated list of additional fields. Supported: `status` (requires `user:read.status`). Expanding `status` also returns `willReturn` when set.
+	// Comma-separated list of additional fields. Supported: `status` (requires `user:read.status`). Expanding `status` also returns `willReturn` when set. Write that field with `user.status.set` / `.clear`.
 	Expand *string `json:"-" url:"expand,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -166,8 +165,8 @@ type User struct {
 	Location *string `json:"location,omitempty" url:"location,omitempty"`
 	// User's current presence status. Only included when `expand=status` is requested and the `user:read.status` scope is granted.
 	Status *UserStatus `json:"status,omitempty" url:"status,omitempty"`
-	// Out-of-office / "Will Return" status. Present only when `expand=status` is requested, the `user:read.status` scope is granted, and the user has a future return time. A user can be `checkedIn` and still have `willReturn` (multi-day Out of Roam) — key off the presence of this object rather than `status` alone.
-	WillReturn *UserWillReturn `json:"willReturn,omitempty" url:"willReturn,omitempty"`
+	// Present only when `expand=status` is requested, the `user:read.status` scope is granted, and the user has a future return time. Write it with [`user.status.set`](https://developer.ro.am/docs/api/user-status-set) / [`.clear`](https://developer.ro.am/docs/api/user-status-clear).
+	WillReturn *WillReturn `json:"willReturn,omitempty" url:"willReturn,omitempty"`
 	// Whether the user is currently available for visitors. Only included when `expand=available` is requested and the `user:read.status` scope is granted.
 	Available *bool `json:"available,omitempty" url:"available,omitempty"`
 	// Classic bot persona identifier, when available.
@@ -252,7 +251,7 @@ func (u *User) GetStatus() *UserStatus {
 	return u.Status
 }
 
-func (u *User) GetWillReturn() *UserWillReturn {
+func (u *User) GetWillReturn() *WillReturn {
 	if u == nil {
 		return nil
 	}
@@ -366,7 +365,7 @@ func (u *User) SetStatus(status *UserStatus) {
 
 // SetWillReturn sets the WillReturn field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (u *User) SetWillReturn(willReturn *UserWillReturn) {
+func (u *User) SetWillReturn(willReturn *WillReturn) {
 	u.WillReturn = willReturn
 	u.require(userFieldWillReturn)
 }
@@ -478,134 +477,6 @@ func NewUserTypeFromString(s string) (UserType, error) {
 
 func (u UserType) Ptr() *UserType {
 	return &u
-}
-
-// Out-of-office / "Will Return" status. Present only when `expand=status` is requested, the `user:read.status` scope is granted, and the user has a future return time. A user can be `checkedIn` and still have `willReturn` (multi-day Out of Roam) — key off the presence of this object rather than `status` alone.
-var (
-	userWillReturnFieldReturnTime = big.NewInt(1 << 0)
-	userWillReturnFieldReason     = big.NewInt(1 << 1)
-	userWillReturnFieldOutOfRoam  = big.NewInt(1 << 2)
-)
-
-type UserWillReturn struct {
-	// When the user is expected to return (RFC 3339).
-	ReturnTime time.Time `json:"returnTime" url:"returnTime"`
-	// Optional absence message (e.g. "On Vacation").
-	Reason *string `json:"reason,omitempty" url:"reason,omitempty"`
-	// When true, multi-day Out of Roam that persists across check-ins. When false or omitted, same-day Will Return Today.
-	OutOfRoam *bool `json:"outOfRoam,omitempty" url:"outOfRoam,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (u *UserWillReturn) GetReturnTime() time.Time {
-	if u == nil {
-		return time.Time{}
-	}
-	return u.ReturnTime
-}
-
-func (u *UserWillReturn) GetReason() *string {
-	if u == nil {
-		return nil
-	}
-	return u.Reason
-}
-
-func (u *UserWillReturn) GetOutOfRoam() *bool {
-	if u == nil {
-		return nil
-	}
-	return u.OutOfRoam
-}
-
-func (u *UserWillReturn) GetExtraProperties() map[string]interface{} {
-	if u == nil {
-		return nil
-	}
-	return u.extraProperties
-}
-
-func (u *UserWillReturn) require(field *big.Int) {
-	if u.explicitFields == nil {
-		u.explicitFields = big.NewInt(0)
-	}
-	u.explicitFields.Or(u.explicitFields, field)
-}
-
-// SetReturnTime sets the ReturnTime field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UserWillReturn) SetReturnTime(returnTime time.Time) {
-	u.ReturnTime = returnTime
-	u.require(userWillReturnFieldReturnTime)
-}
-
-// SetReason sets the Reason field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UserWillReturn) SetReason(reason *string) {
-	u.Reason = reason
-	u.require(userWillReturnFieldReason)
-}
-
-// SetOutOfRoam sets the OutOfRoam field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UserWillReturn) SetOutOfRoam(outOfRoam *bool) {
-	u.OutOfRoam = outOfRoam
-	u.require(userWillReturnFieldOutOfRoam)
-}
-
-func (u *UserWillReturn) UnmarshalJSON(data []byte) error {
-	type embed UserWillReturn
-	var unmarshaler = struct {
-		embed
-		ReturnTime *internal.DateTime `json:"returnTime"`
-	}{
-		embed: embed(*u),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*u = UserWillReturn(unmarshaler.embed)
-	u.ReturnTime = unmarshaler.ReturnTime.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *u)
-	if err != nil {
-		return err
-	}
-	u.extraProperties = extraProperties
-	u.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (u *UserWillReturn) MarshalJSON() ([]byte, error) {
-	type embed UserWillReturn
-	var marshaler = struct {
-		embed
-		ReturnTime *internal.DateTime `json:"returnTime"`
-	}{
-		embed:      embed(*u),
-		ReturnTime: internal.NewDateTime(u.ReturnTime),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, u.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (u *UserWillReturn) String() string {
-	if u == nil {
-		return "<nil>"
-	}
-	if len(u.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(u.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(u); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", u)
 }
 
 var (

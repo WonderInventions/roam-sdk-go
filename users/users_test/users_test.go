@@ -77,6 +77,151 @@ func VerifyRequestCount(
 	require.Equal(t, expected, len(result.Requests))
 }
 
+func TestUsersUserStatusSetWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &roamhq.UserStatusSetRequest{
+		UserID: "ada@example.com",
+		WillReturn: &roamhq.UserStatusSetRequestWillReturn{
+			ReturnTime: roamhq.MustParseDateTime(
+				"2026-09-22T09:00:00Z",
+			),
+			Reason: roamhq.String(
+				"On vacation",
+			),
+			OutOfRoam: roamhq.Bool(
+				true,
+			),
+		},
+	}
+	_, invocationErr := client.Users.UserStatusSet(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestUsersUserStatusSetWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestUsersUserStatusSetWithWireMock", "POST", "/user.status.set", nil, 1)
+}
+
+func TestUsersUserStatusClearWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &roamhq.UserStatusClearRequest{
+		UserID: "ada@example.com",
+	}
+	invocationErr := client.Users.UserStatusClear(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestUsersUserStatusClearWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestUsersUserStatusClearWithWireMock", "POST", "/user.status.clear", nil, 1)
+}
+
+func TestUsersUserStatusBubbleSetWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &roamhq.UserStatusBubbleSetRequest{
+		UserID: "ada@example.com",
+		Text:   "At lunch 🍎",
+		TTLSeconds: roamhq.Int64(
+			int64(3600),
+		),
+	}
+	_, invocationErr := client.Users.UserStatusBubbleSet(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestUsersUserStatusBubbleSetWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestUsersUserStatusBubbleSetWithWireMock", "POST", "/user.statusBubble.set", nil, 1)
+}
+
+func TestUsersUserStatusBubbleGetWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &roamhq.UserStatusBubbleGetRequest{
+		UserID: "userId",
+	}
+	_, invocationErr := client.Users.UserStatusBubbleGet(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestUsersUserStatusBubbleGetWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestUsersUserStatusBubbleGetWithWireMock", "GET", "/user.statusBubble.get", map[string]interface{}{"userId": "userId"}, 1)
+}
+
+func TestUsersUserStatusBubbleClearWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &roamhq.UserStatusBubbleClearRequest{
+		UserID: "ada@example.com",
+	}
+	invocationErr := client.Users.UserStatusBubbleClear(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestUsersUserStatusBubbleClearWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestUsersUserStatusBubbleClearWithWireMock", "POST", "/user.statusBubble.clear", nil, 1)
+}
+
 func TestUsersUserActivitySetWithWireMock(
 	t *testing.T,
 ) {
@@ -89,7 +234,7 @@ func TestUsersUserActivitySetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &roamhq.UserActivitySetRequest{
-		UserID:     "0cc74785-e31e-4403-aa5e-0cc7c1897e66",
+		UserID:     "ada@example.com",
 		ExternalID: "justcall:call:CA123",
 		Display: &roamhq.UserActivityDisplay{
 			Emoji: "📞",
@@ -130,7 +275,7 @@ func TestUsersUserActivityClearWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &roamhq.UserActivityClearRequest{
-		UserID:     "0cc74785-e31e-4403-aa5e-0cc7c1897e66",
+		UserID:     "ada@example.com",
 		ExternalID: "justcall:call:CA123",
 	}
 	invocationErr := client.Users.UserActivityClear(
