@@ -34,6 +34,221 @@ func NewClient(options *core.RequestOptions) *Client {
 	}
 }
 
+// Record an absence on a workspace member — the same Will Return Today /
+// Out of Roam field the desktop client writes, already readable via
+// [`user.info?expand=status`](https://developer.ro.am/docs/api/user-info) and
+// [`user.status.update`](https://developer.ro.am/docs/webhooks/user-status-update).
+//
+// This is **not** [external activity](https://developer.ro.am/docs/guides/user-activity). Use
+// `user.status.set` for HR absences (sick leave, vacation, parental leave,
+// public holidays). Use `user.activity.set` for a short-lived on-map glow
+// / emoji (phone call, browser meeting).
+//
+// `willReturn` is last-writer-wins with the desktop client. Setting it
+// does **not** check the user out, does **not** enable Do Not Disturb, and
+// does **not** accept a `status` enum (`checkedIn` / `checkedOut` stay
+// read-only).
+//
+// `outOfRoam` defaults to `true` (persistent Out of Roam, up to 2 years).
+// Pass `outOfRoam: false` for same-day Will Return Today (`returnTime`
+// must be less than 10 hours from now).
+//
+// Identify the user with `userId`: a bare UUID, tagged `U-…` ID, or
+// ASCII email (same convention as `group.create` members). Third-party
+// systems that only have an email do not need a UUID lookup first.
+//
+// See [Will Return / Out of Roam](https://developer.ro.am/docs/guides/user-status) for the two
+// modes, persistence across check-in, and an HRIS example.
+//
+// **Access:** Organization and Personal. Organization tokens may target
+// any active member in the workspace. Personal tokens (OAuth or PAT) may
+// target only the token owner.
+//
+// **Required scope:** `user:write.status`. Personal Access Tokens skip
+// this check; personal-mode OAuth installs must still request the scope.
+// Reading the field back via `user.info` still needs `user:read.status`.
+//
+// Example:
+//
+//	request := &roamhq.UserStatusSetRequest{
+//	    UserID: "ada@example.com",
+//	    WillReturn: &roamhq.UserStatusSetRequestWillReturn{
+//	        ReturnTime: roamhq.MustParseDateTime(
+//	            "2026-09-22T09:00:00Z",
+//	        ),
+//	        Reason: roamhq.String(
+//	            "On vacation",
+//	        ),
+//	        OutOfRoam: roamhq.Bool(
+//	            true,
+//	        ),
+//	    },
+//	}
+//	client.Users.UserStatusSet(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) UserStatusSet(
+	ctx context.Context,
+	request *roamhq.UserStatusSetRequest,
+	opts ...option.RequestOption,
+) (*roamhq.UserStatusSetResponse, error) {
+	response, err := c.WithRawResponse.UserStatusSet(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
+// Remove the Will Return / Out of Roam previously written with
+// [`user.status.set`](https://developer.ro.am/docs/api/user-status-set) or the desktop client.
+// Clears both same-day Will Return Today and persistent Out of Roam.
+//
+// Clearing when nothing is set still returns **204**. This call does
+// **not** change check-in status.
+//
+// See [Will Return / Out of Roam](https://developer.ro.am/docs/guides/user-status) for
+// persistence, check-in interaction, and the HRIS lifecycle.
+//
+// **Access:** Organization and Personal. Organization tokens may target
+// any active member in the workspace. Personal tokens (OAuth or PAT) may
+// target only the token owner.
+//
+// **Required scope:** `user:write.status`. Personal Access Tokens skip
+// this check; personal-mode OAuth installs must still request the scope.
+//
+// Example:
+//
+//	request := &roamhq.UserStatusClearRequest{
+//	    UserID: "ada@example.com",
+//	}
+//	client.Users.UserStatusClear(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) UserStatusClear(
+	ctx context.Context,
+	request *roamhq.UserStatusClearRequest,
+	opts ...option.RequestOption,
+) error {
+	_, err := c.WithRawResponse.UserStatusClear(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Replaces the shared UI/API thought bubble. Text is trimmed and limited to 1–20 Unicode code points. Omitted or null ttlSeconds defaults to 86400; integers from 300 through 86400 are accepted. Durations below 5 minutes or above 24 hours are rejected. Automatic map removal can take up to about a minute after expiration. Repeating set refreshes expiration. Sending expiresAt is rejected.
+//
+// See [Status bubbles](https://developer.ro.am/docs/guides/user-status-bubble).
+//
+// **Access:** Organization and Personal. Organization credentials may target an active user in the workspace. Personal OAuth and PATs may target only their owner. The workspace comes from the token.
+//
+// **Required scope:** `user:write.statusBubble`. PATs skip the scope check; personal OAuth requires the scope.
+//
+// Example:
+//
+//	request := &roamhq.UserStatusBubbleSetRequest{
+//	    UserID: "ada@example.com",
+//	    Text: "At lunch 🍎",
+//	    TTLSeconds: roamhq.Int64(
+//	        int64(3600),
+//	    ),
+//	}
+//	client.Users.UserStatusBubbleSet(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) UserStatusBubbleSet(
+	ctx context.Context,
+	request *roamhq.UserStatusBubbleSetRequest,
+	opts ...option.RequestOption,
+) (*roamhq.UserStatusBubbleResponse, error) {
+	response, err := c.WithRawResponse.UserStatusBubbleSet(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
+// Returns the shared UI/API thought bubble, or null when no live bubble exists. Expired bubbles are omitted before storage cleanup runs.
+//
+// See [Status bubbles](https://developer.ro.am/docs/guides/user-status-bubble).
+//
+// **Access:** Organization and Personal. Organization credentials may target an active user in the workspace. Personal OAuth and PATs may target only their owner. The workspace comes from the token.
+//
+// **Required scope:** `user:read.statusBubble`. PATs skip the scope check; personal OAuth requires the scope.
+//
+// Example:
+//
+//	request := &roamhq.UserStatusBubbleGetRequest{
+//	    UserID: "userId",
+//	}
+//	client.Users.UserStatusBubbleGet(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) UserStatusBubbleGet(
+	ctx context.Context,
+	request *roamhq.UserStatusBubbleGetRequest,
+	opts ...option.RequestOption,
+) (*roamhq.UserStatusBubbleResponse, error) {
+	response, err := c.WithRawResponse.UserStatusBubbleGet(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
+// Clears the shared thought bubble, including a bubble written by the UI or another integration. Repeating clear is a successful no-op. This does not clear Will Return or external activities.
+//
+// See [Status bubbles](https://developer.ro.am/docs/guides/user-status-bubble).
+//
+// **Access:** Organization and Personal. Organization credentials may target an active user in the workspace. Personal OAuth and PATs may target only their owner. The workspace comes from the token.
+//
+// **Required scope:** `user:write.statusBubble`. PATs skip the scope check; personal OAuth requires the scope.
+//
+// Example:
+//
+//	request := &roamhq.UserStatusBubbleClearRequest{
+//	    UserID: "ada@example.com",
+//	}
+//	client.Users.UserStatusBubbleClear(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) UserStatusBubbleClear(
+	ctx context.Context,
+	request *roamhq.UserStatusBubbleClearRequest,
+	opts ...option.RequestOption,
+) error {
+	_, err := c.WithRawResponse.UserStatusBubbleClear(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Paint a badge (and optional glow) on a user's seat for work happening
 // outside Roam — a phone call, a browser meeting, a CRM session. Pass
 // `dnd: true` to also put their assigned office in Do Not Disturb.
@@ -52,6 +267,10 @@ func NewClient(options *core.RequestOptions) *Client {
 // See [External activity](https://developer.ro.am/docs/guides/user-activity) for display, DND,
 // TTL, stacking, and where the indicator appears on the map.
 //
+// Identify the user with `userId`: a bare UUID, tagged `U-…` ID, or
+// ASCII email (same convention as `group.create` members). Third-party
+// systems that only have an email do not need a UUID lookup first.
+//
 // **Access:** Organization and Personal. Organization tokens may target
 // any user in the workspace. Personal tokens (OAuth or PAT) may target
 // only the token owner.
@@ -62,7 +281,7 @@ func NewClient(options *core.RequestOptions) *Client {
 // Example:
 //
 //	request := &roamhq.UserActivitySetRequest{
-//	    UserID: "0cc74785-e31e-4403-aa5e-0cc7c1897e66",
+//	    UserID: "ada@example.com",
 //	    ExternalID: "justcall:call:CA123",
 //	    Display: &roamhq.UserActivityDisplay{
 //	        Emoji: "📞",
@@ -120,7 +339,7 @@ func (c *Client) UserActivitySet(
 // Example:
 //
 //	request := &roamhq.UserActivityClearRequest{
-//	    UserID: "0cc74785-e31e-4403-aa5e-0cc7c1897e66",
+//	    UserID: "ada@example.com",
 //	    ExternalID: "justcall:call:CA123",
 //	}
 //	client.Users.UserActivityClear(

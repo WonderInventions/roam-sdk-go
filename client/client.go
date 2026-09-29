@@ -10,6 +10,7 @@ import (
 	core "ro.am/roamhq/core"
 	group "ro.am/roamhq/group"
 	groups "ro.am/roamhq/groups"
+	guestbadges "ro.am/roamhq/guestbadges"
 	internal "ro.am/roamhq/internal"
 	item "ro.am/roamhq/item"
 	lobby "ro.am/roamhq/lobby"
@@ -45,6 +46,7 @@ type Client struct {
 	Magicasts    *magicasts.Client
 	Group        *group.Client
 	Groups       *groups.Client
+	GuestBadges  *guestbadges.Client
 	Token        *token.Client
 	Webhook      *webhook.Client
 
@@ -73,6 +75,7 @@ func NewClient(opts ...option.RequestOption) *Client {
 		Magicasts:    magicasts.NewClient(options),
 		Group:        group.NewClient(options),
 		Groups:       groups.NewClient(options),
+		GuestBadges:  guestbadges.NewClient(options),
 		Token:        token.NewClient(options),
 		Webhook:      webhook.NewClient(options),
 		options:      options,
