@@ -254,8 +254,10 @@ var (
 )
 
 type UserActivityDisplay struct {
-	// Badge shown on the user's seat. Required. At most 16 Unicode code
-	// points, so ZWJ sequences (family emoji, flags) stay valid.
+	// Badge shown on the user's seat. Required. Must be a single emoji —
+	// a text blurb or several emoji is `invalid_parameter`. ZWJ sequences
+	// (family, flags, keycaps, skin tones) count as one. At most 16
+	// Unicode code points (the storage cap).
 	Emoji string `json:"emoji" url:"emoji"`
 	// Required hover-tooltip title. At most 140 Unicode code points.
 	Title string `json:"title" url:"title"`
@@ -445,6 +447,219 @@ func (u UserActivityDisplayColor) Ptr() *UserActivityDisplayColor {
 }
 
 var (
+	userStatusBubbleResponseFieldUserID       = big.NewInt(1 << 0)
+	userStatusBubbleResponseFieldStatusBubble = big.NewInt(1 << 1)
+)
+
+type UserStatusBubbleResponse struct {
+	// Canonical UUID of the target user.
+	UserID string `json:"userId" url:"userId"`
+	// The live thought bubble, or null when none is set or it has expired.
+	StatusBubble *UserStatusBubbleResponseStatusBubble `json:"statusBubble,omitempty" url:"statusBubble,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (u *UserStatusBubbleResponse) GetUserID() string {
+	if u == nil {
+		return ""
+	}
+	return u.UserID
+}
+
+func (u *UserStatusBubbleResponse) GetStatusBubble() *UserStatusBubbleResponseStatusBubble {
+	if u == nil {
+		return nil
+	}
+	return u.StatusBubble
+}
+
+func (u *UserStatusBubbleResponse) GetExtraProperties() map[string]interface{} {
+	if u == nil {
+		return nil
+	}
+	return u.extraProperties
+}
+
+func (u *UserStatusBubbleResponse) require(field *big.Int) {
+	if u.explicitFields == nil {
+		u.explicitFields = big.NewInt(0)
+	}
+	u.explicitFields.Or(u.explicitFields, field)
+}
+
+// SetUserID sets the UserID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusBubbleResponse) SetUserID(userID string) {
+	u.UserID = userID
+	u.require(userStatusBubbleResponseFieldUserID)
+}
+
+// SetStatusBubble sets the StatusBubble field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusBubbleResponse) SetStatusBubble(statusBubble *UserStatusBubbleResponseStatusBubble) {
+	u.StatusBubble = statusBubble
+	u.require(userStatusBubbleResponseFieldStatusBubble)
+}
+
+func (u *UserStatusBubbleResponse) UnmarshalJSON(data []byte) error {
+	type unmarshaler UserStatusBubbleResponse
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*u = UserStatusBubbleResponse(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *u)
+	if err != nil {
+		return err
+	}
+	u.extraProperties = extraProperties
+	u.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (u *UserStatusBubbleResponse) MarshalJSON() ([]byte, error) {
+	type embed UserStatusBubbleResponse
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*u),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, u.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (u *UserStatusBubbleResponse) String() string {
+	if u == nil {
+		return "<nil>"
+	}
+	if len(u.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(u.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(u); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", u)
+}
+
+// The live thought bubble, or null when none is set or it has expired.
+var (
+	userStatusBubbleResponseStatusBubbleFieldText      = big.NewInt(1 << 0)
+	userStatusBubbleResponseStatusBubbleFieldExpiresAt = big.NewInt(1 << 1)
+)
+
+type UserStatusBubbleResponseStatusBubble struct {
+	// Trimmed text, limited to 20 Unicode code points.
+	Text string `json:"text" url:"text"`
+	// Server-stamped expiration in RFC3339 format with millisecond precision.
+	ExpiresAt time.Time `json:"expiresAt" url:"expiresAt"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (u *UserStatusBubbleResponseStatusBubble) GetText() string {
+	if u == nil {
+		return ""
+	}
+	return u.Text
+}
+
+func (u *UserStatusBubbleResponseStatusBubble) GetExpiresAt() time.Time {
+	if u == nil {
+		return time.Time{}
+	}
+	return u.ExpiresAt
+}
+
+func (u *UserStatusBubbleResponseStatusBubble) GetExtraProperties() map[string]interface{} {
+	if u == nil {
+		return nil
+	}
+	return u.extraProperties
+}
+
+func (u *UserStatusBubbleResponseStatusBubble) require(field *big.Int) {
+	if u.explicitFields == nil {
+		u.explicitFields = big.NewInt(0)
+	}
+	u.explicitFields.Or(u.explicitFields, field)
+}
+
+// SetText sets the Text field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusBubbleResponseStatusBubble) SetText(text string) {
+	u.Text = text
+	u.require(userStatusBubbleResponseStatusBubbleFieldText)
+}
+
+// SetExpiresAt sets the ExpiresAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusBubbleResponseStatusBubble) SetExpiresAt(expiresAt time.Time) {
+	u.ExpiresAt = expiresAt
+	u.require(userStatusBubbleResponseStatusBubbleFieldExpiresAt)
+}
+
+func (u *UserStatusBubbleResponseStatusBubble) UnmarshalJSON(data []byte) error {
+	type embed UserStatusBubbleResponseStatusBubble
+	var unmarshaler = struct {
+		embed
+		ExpiresAt *internal.DateTime `json:"expiresAt"`
+	}{
+		embed: embed(*u),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*u = UserStatusBubbleResponseStatusBubble(unmarshaler.embed)
+	u.ExpiresAt = unmarshaler.ExpiresAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *u)
+	if err != nil {
+		return err
+	}
+	u.extraProperties = extraProperties
+	u.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (u *UserStatusBubbleResponseStatusBubble) MarshalJSON() ([]byte, error) {
+	type embed UserStatusBubbleResponseStatusBubble
+	var marshaler = struct {
+		embed
+		ExpiresAt *internal.DateTime `json:"expiresAt"`
+	}{
+		embed:     embed(*u),
+		ExpiresAt: internal.NewDateTime(u.ExpiresAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, u.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (u *UserStatusBubbleResponseStatusBubble) String() string {
+	if u == nil {
+		return "<nil>"
+	}
+	if len(u.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(u.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(u); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", u)
+}
+
+var (
 	userActivityListResponseFieldActivities = big.NewInt(1 << 0)
 )
 
@@ -528,14 +743,292 @@ func (u *UserActivityListResponse) String() string {
 	return fmt.Sprintf("%#v", u)
 }
 
+// Absence to write. Required. Replaces any existing Will
+// Return / Out of Roam on this user.
+var (
+	userStatusSetRequestWillReturnFieldReturnTime = big.NewInt(1 << 0)
+	userStatusSetRequestWillReturnFieldReason     = big.NewInt(1 << 1)
+	userStatusSetRequestWillReturnFieldOutOfRoam  = big.NewInt(1 << 2)
+)
+
+type UserStatusSetRequestWillReturn struct {
+	// When the user is expected back (RFC3339). Must be in
+	// the future and at most 2 years from now. Will Return
+	// Today (`outOfRoam: false`) additionally requires
+	// less than 10 hours from now.
+	ReturnTime time.Time `json:"returnTime" url:"returnTime"`
+	// Optional absence message (for example "On vacation").
+	// At most 128 Unicode code points.
+	Reason *string `json:"reason,omitempty" url:"reason,omitempty"`
+	// `true` (default) is multi-day Out of Roam and persists
+	// across check-ins. `false` is same-day Will Return Today.
+	OutOfRoam *bool `json:"outOfRoam,omitempty" url:"outOfRoam,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (u *UserStatusSetRequestWillReturn) GetReturnTime() time.Time {
+	if u == nil {
+		return time.Time{}
+	}
+	return u.ReturnTime
+}
+
+func (u *UserStatusSetRequestWillReturn) GetReason() *string {
+	if u == nil {
+		return nil
+	}
+	return u.Reason
+}
+
+func (u *UserStatusSetRequestWillReturn) GetOutOfRoam() *bool {
+	if u == nil {
+		return nil
+	}
+	return u.OutOfRoam
+}
+
+func (u *UserStatusSetRequestWillReturn) GetExtraProperties() map[string]interface{} {
+	if u == nil {
+		return nil
+	}
+	return u.extraProperties
+}
+
+func (u *UserStatusSetRequestWillReturn) require(field *big.Int) {
+	if u.explicitFields == nil {
+		u.explicitFields = big.NewInt(0)
+	}
+	u.explicitFields.Or(u.explicitFields, field)
+}
+
+// SetReturnTime sets the ReturnTime field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusSetRequestWillReturn) SetReturnTime(returnTime time.Time) {
+	u.ReturnTime = returnTime
+	u.require(userStatusSetRequestWillReturnFieldReturnTime)
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusSetRequestWillReturn) SetReason(reason *string) {
+	u.Reason = reason
+	u.require(userStatusSetRequestWillReturnFieldReason)
+}
+
+// SetOutOfRoam sets the OutOfRoam field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusSetRequestWillReturn) SetOutOfRoam(outOfRoam *bool) {
+	u.OutOfRoam = outOfRoam
+	u.require(userStatusSetRequestWillReturnFieldOutOfRoam)
+}
+
+func (u *UserStatusSetRequestWillReturn) UnmarshalJSON(data []byte) error {
+	type embed UserStatusSetRequestWillReturn
+	var unmarshaler = struct {
+		embed
+		ReturnTime *internal.DateTime `json:"returnTime"`
+	}{
+		embed: embed(*u),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*u = UserStatusSetRequestWillReturn(unmarshaler.embed)
+	u.ReturnTime = unmarshaler.ReturnTime.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *u)
+	if err != nil {
+		return err
+	}
+	u.extraProperties = extraProperties
+	u.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (u *UserStatusSetRequestWillReturn) MarshalJSON() ([]byte, error) {
+	type embed UserStatusSetRequestWillReturn
+	var marshaler = struct {
+		embed
+		ReturnTime *internal.DateTime `json:"returnTime"`
+	}{
+		embed:      embed(*u),
+		ReturnTime: internal.NewDateTime(u.ReturnTime),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, u.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (u *UserStatusSetRequestWillReturn) String() string {
+	if u == nil {
+		return "<nil>"
+	}
+	if len(u.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(u.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(u); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", u)
+}
+
+var (
+	userStatusSetResponseFieldUserID     = big.NewInt(1 << 0)
+	userStatusSetResponseFieldStatus     = big.NewInt(1 << 1)
+	userStatusSetResponseFieldWillReturn = big.NewInt(1 << 2)
+)
+
+type UserStatusSetResponse struct {
+	// Bare UUID of the target user.
+	UserID string `json:"userId" url:"userId"`
+	// Current check-in. Unchanged by this call. Omitted if the
+	// presence lookup fails.
+	Status     *UserStatusSetResponseStatus `json:"status,omitempty" url:"status,omitempty"`
+	WillReturn *WillReturn                  `json:"willReturn" url:"willReturn"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (u *UserStatusSetResponse) GetUserID() string {
+	if u == nil {
+		return ""
+	}
+	return u.UserID
+}
+
+func (u *UserStatusSetResponse) GetStatus() *UserStatusSetResponseStatus {
+	if u == nil {
+		return nil
+	}
+	return u.Status
+}
+
+func (u *UserStatusSetResponse) GetWillReturn() *WillReturn {
+	if u == nil {
+		return nil
+	}
+	return u.WillReturn
+}
+
+func (u *UserStatusSetResponse) GetExtraProperties() map[string]interface{} {
+	if u == nil {
+		return nil
+	}
+	return u.extraProperties
+}
+
+func (u *UserStatusSetResponse) require(field *big.Int) {
+	if u.explicitFields == nil {
+		u.explicitFields = big.NewInt(0)
+	}
+	u.explicitFields.Or(u.explicitFields, field)
+}
+
+// SetUserID sets the UserID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusSetResponse) SetUserID(userID string) {
+	u.UserID = userID
+	u.require(userStatusSetResponseFieldUserID)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusSetResponse) SetStatus(status *UserStatusSetResponseStatus) {
+	u.Status = status
+	u.require(userStatusSetResponseFieldStatus)
+}
+
+// SetWillReturn sets the WillReturn field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusSetResponse) SetWillReturn(willReturn *WillReturn) {
+	u.WillReturn = willReturn
+	u.require(userStatusSetResponseFieldWillReturn)
+}
+
+func (u *UserStatusSetResponse) UnmarshalJSON(data []byte) error {
+	type unmarshaler UserStatusSetResponse
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*u = UserStatusSetResponse(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *u)
+	if err != nil {
+		return err
+	}
+	u.extraProperties = extraProperties
+	u.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (u *UserStatusSetResponse) MarshalJSON() ([]byte, error) {
+	type embed UserStatusSetResponse
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*u),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, u.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (u *UserStatusSetResponse) String() string {
+	if u == nil {
+		return "<nil>"
+	}
+	if len(u.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(u.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(u); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", u)
+}
+
+// Current check-in. Unchanged by this call. Omitted if the
+// presence lookup fails.
+type UserStatusSetResponseStatus string
+
+const (
+	UserStatusSetResponseStatusCheckedIn  UserStatusSetResponseStatus = "checkedIn"
+	UserStatusSetResponseStatusCheckedOut UserStatusSetResponseStatus = "checkedOut"
+)
+
+func NewUserStatusSetResponseStatusFromString(s string) (UserStatusSetResponseStatus, error) {
+	switch s {
+	case "checkedIn":
+		return UserStatusSetResponseStatusCheckedIn, nil
+	case "checkedOut":
+		return UserStatusSetResponseStatusCheckedOut, nil
+	}
+	var t UserStatusSetResponseStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (u UserStatusSetResponseStatus) Ptr() *UserStatusSetResponseStatus {
+	return &u
+}
+
 var (
 	userActivityClearRequestFieldUserID     = big.NewInt(1 << 0)
 	userActivityClearRequestFieldExternalID = big.NewInt(1 << 1)
 )
 
 type UserActivityClearRequest struct {
-	// Target user. Bare or tagged UUID. Personal tokens may only
-	// pass their own user.
+	// Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+	// (same convention as `group.create` members). Personal
+	// tokens may only pass their own user.
 	UserID string `json:"userId" url:"-"`
 	// The `externalId` previously passed to `user.activity.set`.
 	ExternalID string `json:"externalId" url:"-"`
@@ -591,8 +1084,9 @@ var (
 )
 
 type UserActivityListRequest struct {
-	// Target user. Bare or tagged UUID. Personal tokens may only pass
-	// their own user.
+	// Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+	// (same convention as `group.create` members). Personal tokens
+	// may only pass their own user.
 	UserID string `json:"-" url:"userId"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -624,8 +1118,11 @@ var (
 )
 
 type UserActivitySetRequest struct {
-	// Target user. Bare or tagged UUID. Personal tokens may only
-	// pass their own user.
+	// Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+	// (same convention as `group.create` members). Personal
+	// tokens may only pass their own user. Does not require
+	// `user:read.email` — email is an identifier, not a
+	// disclosure.
 	UserID string `json:"userId" url:"-"`
 	// Caller-chosen session id, unique per integration and user.
 	// Re-using it upserts the existing row (heartbeat). At most
@@ -733,6 +1230,269 @@ func (u *UserActivitySetRequest) MarshalJSON() ([]byte, error) {
 		embed:     embed(*u),
 		ExpiresAt: internal.NewOptionalDateTime(u.ExpiresAt),
 		StartedAt: internal.NewOptionalDateTime(u.StartedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, u.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
+	userStatusClearRequestFieldUserID = big.NewInt(1 << 0)
+)
+
+type UserStatusClearRequest struct {
+	// Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+	// (same convention as `group.create` members). Personal
+	// tokens may only pass their own user.
+	UserID string `json:"userId" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (u *UserStatusClearRequest) require(field *big.Int) {
+	if u.explicitFields == nil {
+		u.explicitFields = big.NewInt(0)
+	}
+	u.explicitFields.Or(u.explicitFields, field)
+}
+
+// SetUserID sets the UserID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusClearRequest) SetUserID(userID string) {
+	u.UserID = userID
+	u.require(userStatusClearRequestFieldUserID)
+}
+
+func (u *UserStatusClearRequest) UnmarshalJSON(data []byte) error {
+	type unmarshaler UserStatusClearRequest
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*u = UserStatusClearRequest(body)
+	return nil
+}
+
+func (u *UserStatusClearRequest) MarshalJSON() ([]byte, error) {
+	type embed UserStatusClearRequest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*u),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, u.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
+	userStatusSetRequestFieldUserID     = big.NewInt(1 << 0)
+	userStatusSetRequestFieldWillReturn = big.NewInt(1 << 1)
+	userStatusSetRequestFieldStatus     = big.NewInt(1 << 2)
+)
+
+type UserStatusSetRequest struct {
+	// Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+	// (same convention as `group.create` members). Personal
+	// tokens may only pass their own user. Does not require
+	// `user:read.email` — email is an identifier, not a
+	// disclosure.
+	UserID string `json:"userId" url:"-"`
+	// Absence to write. Required. Replaces any existing Will
+	// Return / Out of Roam on this user.
+	WillReturn *UserStatusSetRequestWillReturn `json:"willReturn" url:"-"`
+	// Rejected. Check-in status is read-only; absences go in
+	// `willReturn`. Sending this field returns `400`
+	// `invalid_arguments`.
+	Status *string `json:"status,omitempty" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (u *UserStatusSetRequest) require(field *big.Int) {
+	if u.explicitFields == nil {
+		u.explicitFields = big.NewInt(0)
+	}
+	u.explicitFields.Or(u.explicitFields, field)
+}
+
+// SetUserID sets the UserID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusSetRequest) SetUserID(userID string) {
+	u.UserID = userID
+	u.require(userStatusSetRequestFieldUserID)
+}
+
+// SetWillReturn sets the WillReturn field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusSetRequest) SetWillReturn(willReturn *UserStatusSetRequestWillReturn) {
+	u.WillReturn = willReturn
+	u.require(userStatusSetRequestFieldWillReturn)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusSetRequest) SetStatus(status *string) {
+	u.Status = status
+	u.require(userStatusSetRequestFieldStatus)
+}
+
+func (u *UserStatusSetRequest) UnmarshalJSON(data []byte) error {
+	type unmarshaler UserStatusSetRequest
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*u = UserStatusSetRequest(body)
+	return nil
+}
+
+func (u *UserStatusSetRequest) MarshalJSON() ([]byte, error) {
+	type embed UserStatusSetRequest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*u),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, u.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
+	userStatusBubbleClearRequestFieldUserID = big.NewInt(1 << 0)
+)
+
+type UserStatusBubbleClearRequest struct {
+	// Bare UUID, tagged U-… ID, or ASCII email of the target user.
+	UserID string `json:"userId" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (u *UserStatusBubbleClearRequest) require(field *big.Int) {
+	if u.explicitFields == nil {
+		u.explicitFields = big.NewInt(0)
+	}
+	u.explicitFields.Or(u.explicitFields, field)
+}
+
+// SetUserID sets the UserID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusBubbleClearRequest) SetUserID(userID string) {
+	u.UserID = userID
+	u.require(userStatusBubbleClearRequestFieldUserID)
+}
+
+func (u *UserStatusBubbleClearRequest) UnmarshalJSON(data []byte) error {
+	type unmarshaler UserStatusBubbleClearRequest
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*u = UserStatusBubbleClearRequest(body)
+	return nil
+}
+
+func (u *UserStatusBubbleClearRequest) MarshalJSON() ([]byte, error) {
+	type embed UserStatusBubbleClearRequest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*u),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, u.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
+	userStatusBubbleGetRequestFieldUserID = big.NewInt(1 << 0)
+)
+
+type UserStatusBubbleGetRequest struct {
+	// Bare UUID, tagged U-… ID, or ASCII email of the target user.
+	UserID string `json:"-" url:"userId"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (u *UserStatusBubbleGetRequest) require(field *big.Int) {
+	if u.explicitFields == nil {
+		u.explicitFields = big.NewInt(0)
+	}
+	u.explicitFields.Or(u.explicitFields, field)
+}
+
+// SetUserID sets the UserID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusBubbleGetRequest) SetUserID(userID string) {
+	u.UserID = userID
+	u.require(userStatusBubbleGetRequestFieldUserID)
+}
+
+var (
+	userStatusBubbleSetRequestFieldUserID     = big.NewInt(1 << 0)
+	userStatusBubbleSetRequestFieldText       = big.NewInt(1 << 1)
+	userStatusBubbleSetRequestFieldTTLSeconds = big.NewInt(1 << 2)
+)
+
+type UserStatusBubbleSetRequest struct {
+	// Bare UUID, tagged U-… ID, or ASCII email of the target user.
+	UserID string `json:"userId" url:"-"`
+	// Text to trim and store. Must contain 1–20 Unicode code points after trimming. Blank text is rejected.
+	Text string `json:"text" url:"-"`
+	// Optional duration. Omit or pass null for 24 hours. Durations outside 300–86400 seconds are rejected.
+	TTLSeconds *int64 `json:"ttlSeconds,omitempty" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (u *UserStatusBubbleSetRequest) require(field *big.Int) {
+	if u.explicitFields == nil {
+		u.explicitFields = big.NewInt(0)
+	}
+	u.explicitFields.Or(u.explicitFields, field)
+}
+
+// SetUserID sets the UserID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusBubbleSetRequest) SetUserID(userID string) {
+	u.UserID = userID
+	u.require(userStatusBubbleSetRequestFieldUserID)
+}
+
+// SetText sets the Text field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusBubbleSetRequest) SetText(text string) {
+	u.Text = text
+	u.require(userStatusBubbleSetRequestFieldText)
+}
+
+// SetTTLSeconds sets the TTLSeconds field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UserStatusBubbleSetRequest) SetTTLSeconds(ttlSeconds *int64) {
+	u.TTLSeconds = ttlSeconds
+	u.require(userStatusBubbleSetRequestFieldTTLSeconds)
+}
+
+func (u *UserStatusBubbleSetRequest) UnmarshalJSON(data []byte) error {
+	type unmarshaler UserStatusBubbleSetRequest
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*u = UserStatusBubbleSetRequest(body)
+	return nil
+}
+
+func (u *UserStatusBubbleSetRequest) MarshalJSON() ([]byte, error) {
+	type embed UserStatusBubbleSetRequest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*u),
 	}
 	explicitMarshaler := internal.HandleExplicitFields(marshaler, u.explicitFields)
 	return json.Marshal(explicitMarshaler)

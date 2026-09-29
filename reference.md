@@ -2687,7 +2687,7 @@ when the token has `user:read.email`. Cannot be combined with `ids`.
 <dl>
 <dd>
 
-**expand:** `*string` — Comma-separated list of additional fields. Supported: `status` (requires `user:read.status`). Expanding `status` also returns `willReturn` when set.
+**expand:** `*string` — Comma-separated list of additional fields. Supported: `status` (requires `user:read.status`). Expanding `status` also returns `willReturn` when set. Write that field with `user.status.set` / `.clear`.
     
 </dd>
 </dl>
@@ -2779,7 +2779,7 @@ client.User.Info(
 <dl>
 <dd>
 
-**expand:** `*string` — Comma-separated list of additional fields to include. Supported: `status`, `available` (each requires `user:read.status`). Expanding `status` also returns `willReturn` when the user has a future out-of-office entry.
+**expand:** `*string` — Comma-separated list of additional fields to include. Supported: `status`, `available` (each requires `user:read.status`). Expanding `status` also returns `willReturn` when the user has a future out-of-office entry. Write that field with `user.status.set` / `.clear`.
     
 </dd>
 </dl>
@@ -2792,6 +2792,435 @@ client.User.Info(
 </details>
 
 ## Users
+<details><summary><code>client.Users.UserStatusSet(request) -> *roamhq.UserStatusSetResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Record an absence on a workspace member — the same Will Return Today /
+Out of Roam field the desktop client writes, already readable via
+[`user.info?expand=status`](https://developer.ro.am/docs/api/user-info) and
+[`user.status.update`](https://developer.ro.am/docs/webhooks/user-status-update).
+
+This is **not** [external activity](https://developer.ro.am/docs/guides/user-activity). Use
+`user.status.set` for HR absences (sick leave, vacation, parental leave,
+public holidays). Use `user.activity.set` for a short-lived on-map glow
+/ emoji (phone call, browser meeting).
+
+`willReturn` is last-writer-wins with the desktop client. Setting it
+does **not** check the user out, does **not** enable Do Not Disturb, and
+does **not** accept a `status` enum (`checkedIn` / `checkedOut` stay
+read-only).
+
+`outOfRoam` defaults to `true` (persistent Out of Roam, up to 2 years).
+Pass `outOfRoam: false` for same-day Will Return Today (`returnTime`
+must be less than 10 hours from now).
+
+Identify the user with `userId`: a bare UUID, tagged `U-…` ID, or
+ASCII email (same convention as `group.create` members). Third-party
+systems that only have an email do not need a UUID lookup first.
+
+See [Will Return / Out of Roam](https://developer.ro.am/docs/guides/user-status) for the two
+modes, persistence across check-in, and an HRIS example.
+
+**Access:** Organization and Personal. Organization tokens may target
+any active member in the workspace. Personal tokens (OAuth or PAT) may
+target only the token owner.
+
+**Required scope:** `user:write.status`. Personal Access Tokens skip
+this check; personal-mode OAuth installs must still request the scope.
+Reading the field back via `user.info` still needs `user:read.status`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.UserStatusSetRequest{
+    UserID: "ada@example.com",
+    WillReturn: &roamhq.UserStatusSetRequestWillReturn{
+        ReturnTime: roamhq.MustParseDateTime(
+            "2026-09-22T09:00:00Z",
+        ),
+        Reason: roamhq.String(
+            "On vacation",
+        ),
+        OutOfRoam: roamhq.Bool(
+            true,
+        ),
+    },
+}
+client.Users.UserStatusSet(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**userID:** `string` 
+
+Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+(same convention as `group.create` members). Personal
+tokens may only pass their own user. Does not require
+`user:read.email` — email is an identifier, not a
+disclosure.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**willReturn:** `*roamhq.UserStatusSetRequestWillReturn` 
+
+Absence to write. Required. Replaces any existing Will
+Return / Out of Roam on this user.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `*string` 
+
+Rejected. Check-in status is read-only; absences go in
+`willReturn`. Sending this field returns `400`
+`invalid_arguments`.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Users.UserStatusClear(request) -> error</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Remove the Will Return / Out of Roam previously written with
+[`user.status.set`](https://developer.ro.am/docs/api/user-status-set) or the desktop client.
+Clears both same-day Will Return Today and persistent Out of Roam.
+
+Clearing when nothing is set still returns **204**. This call does
+**not** change check-in status.
+
+See [Will Return / Out of Roam](https://developer.ro.am/docs/guides/user-status) for
+persistence, check-in interaction, and the HRIS lifecycle.
+
+**Access:** Organization and Personal. Organization tokens may target
+any active member in the workspace. Personal tokens (OAuth or PAT) may
+target only the token owner.
+
+**Required scope:** `user:write.status`. Personal Access Tokens skip
+this check; personal-mode OAuth installs must still request the scope.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.UserStatusClearRequest{
+    UserID: "ada@example.com",
+}
+client.Users.UserStatusClear(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**userID:** `string` 
+
+Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+(same convention as `group.create` members). Personal
+tokens may only pass their own user.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Users.UserStatusBubbleSet(request) -> *roamhq.UserStatusBubbleResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Replaces the shared UI/API thought bubble. Text is trimmed and limited to 1–20 Unicode code points. Omitted or null ttlSeconds defaults to 86400; integers from 300 through 86400 are accepted. Durations below 5 minutes or above 24 hours are rejected. Automatic map removal can take up to about a minute after expiration. Repeating set refreshes expiration. Sending expiresAt is rejected.
+
+See [Status bubbles](https://developer.ro.am/docs/guides/user-status-bubble).
+
+**Access:** Organization and Personal. Organization credentials may target an active user in the workspace. Personal OAuth and PATs may target only their owner. The workspace comes from the token.
+
+**Required scope:** `user:write.statusBubble`. PATs skip the scope check; personal OAuth requires the scope.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.UserStatusBubbleSetRequest{
+    UserID: "ada@example.com",
+    Text: "At lunch 🍎",
+    TTLSeconds: roamhq.Int64(
+        int64(3600),
+    ),
+}
+client.Users.UserStatusBubbleSet(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**userID:** `string` — Bare UUID, tagged U-… ID, or ASCII email of the target user.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**text:** `string` — Text to trim and store. Must contain 1–20 Unicode code points after trimming. Blank text is rejected.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ttlSeconds:** `*int64` — Optional duration. Omit or pass null for 24 hours. Durations outside 300–86400 seconds are rejected.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Users.UserStatusBubbleGet() -> *roamhq.UserStatusBubbleResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Returns the shared UI/API thought bubble, or null when no live bubble exists. Expired bubbles are omitted before storage cleanup runs.
+
+See [Status bubbles](https://developer.ro.am/docs/guides/user-status-bubble).
+
+**Access:** Organization and Personal. Organization credentials may target an active user in the workspace. Personal OAuth and PATs may target only their owner. The workspace comes from the token.
+
+**Required scope:** `user:read.statusBubble`. PATs skip the scope check; personal OAuth requires the scope.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.UserStatusBubbleGetRequest{
+    UserID: "userId",
+}
+client.Users.UserStatusBubbleGet(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**userID:** `string` — Bare UUID, tagged U-… ID, or ASCII email of the target user.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Users.UserStatusBubbleClear(request) -> error</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Clears the shared thought bubble, including a bubble written by the UI or another integration. Repeating clear is a successful no-op. This does not clear Will Return or external activities.
+
+See [Status bubbles](https://developer.ro.am/docs/guides/user-status-bubble).
+
+**Access:** Organization and Personal. Organization credentials may target an active user in the workspace. Personal OAuth and PATs may target only their owner. The workspace comes from the token.
+
+**Required scope:** `user:write.statusBubble`. PATs skip the scope check; personal OAuth requires the scope.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.UserStatusBubbleClearRequest{
+    UserID: "ada@example.com",
+}
+client.Users.UserStatusBubbleClear(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**userID:** `string` — Bare UUID, tagged U-… ID, or ASCII email of the target user.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.Users.UserActivitySet(request) -> *roamhq.UserActivity</code></summary>
 <dl>
 <dd>
@@ -2822,6 +3251,10 @@ your own rows.
 See [External activity](https://developer.ro.am/docs/guides/user-activity) for display, DND,
 TTL, stacking, and where the indicator appears on the map.
 
+Identify the user with `userId`: a bare UUID, tagged `U-…` ID, or
+ASCII email (same convention as `group.create` members). Third-party
+systems that only have an email do not need a UUID lookup first.
+
 **Access:** Organization and Personal. Organization tokens may target
 any user in the workspace. Personal tokens (OAuth or PAT) may target
 only the token owner.
@@ -2843,7 +3276,7 @@ this check; personal-mode OAuth installs must still request the scope.
 
 ```go
 request := &roamhq.UserActivitySetRequest{
-    UserID: "0cc74785-e31e-4403-aa5e-0cc7c1897e66",
+    UserID: "ada@example.com",
     ExternalID: "justcall:call:CA123",
     Display: &roamhq.UserActivityDisplay{
         Emoji: "📞",
@@ -2880,8 +3313,11 @@ client.Users.UserActivitySet(
 
 **userID:** `string` 
 
-Target user. Bare or tagged UUID. Personal tokens may only
-pass their own user.
+Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+(same convention as `group.create` members). Personal
+tokens may only pass their own user. Does not require
+`user:read.email` — email is an identifier, not a
+disclosure.
     
 </dd>
 </dl>
@@ -3009,7 +3445,7 @@ this check; personal-mode OAuth installs must still request the scope.
 
 ```go
 request := &roamhq.UserActivityClearRequest{
-    UserID: "0cc74785-e31e-4403-aa5e-0cc7c1897e66",
+    UserID: "ada@example.com",
     ExternalID: "justcall:call:CA123",
 }
 client.Users.UserActivityClear(
@@ -3032,8 +3468,9 @@ client.Users.UserActivityClear(
 
 **userID:** `string` 
 
-Target user. Bare or tagged UUID. Personal tokens may only
-pass their own user.
+Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+(same convention as `group.create` members). Personal
+tokens may only pass their own user.
     
 </dd>
 </dl>
@@ -3120,8 +3557,9 @@ client.Users.UserActivityList(
 
 **userID:** `string` 
 
-Target user. Bare or tagged UUID. Personal tokens may only pass
-their own user.
+Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+(same convention as `group.create` members). Personal tokens
+may only pass their own user.
     
 </dd>
 </dl>
@@ -5319,6 +5757,9 @@ mode, where only admins may change settings. Otherwise, all members have
 that capability.
 
 Groups require at least one member. Users can be specified by user ID or email address.
+Unrecognized emails are invited as group members only — they do not receive a
+[Guest Badge](https://developer.ro.am/docs/guides/guest-badges) unless you also call
+[`guest.badge.create`](https://developer.ro.am/docs/api/guest-badge-create).
 
 **Required scope:** `group:write`
 </dd>
@@ -5662,6 +6103,8 @@ Add one or more group members with specified roles.
 
 Members can be specified by user ID or email address. Each member must be assigned a role (member or admin).
 
+Adding an unrecognized email does **not** grant a [Guest Badge](https://developer.ro.am/docs/guides/guest-badges). Use [`guest.badge.create`](https://developer.ro.am/docs/api/guest-badge-create) first if the person is not a workspace member.
+
 Apps may add members to a group if one of the following conditions is true:
 1. It is a public group in their Roam.
 2. They are a member of the group.
@@ -5944,6 +6387,425 @@ client.Groups.List(
 </dl>
 </details>
 
+## Guest Badges
+<details><summary><code>client.GuestBadges.GuestBadgeCreate(request) -> *roamhq.GuestBadge</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Grant a Guest Badge so an email that is **not** a workspace member can
+visit a host in Roam.
+
+This is **not** an [On-Air event guest](https://developer.ro.am/docs/onair-api/on-air-api). It is
+also **not** implied by [`group.add`](https://developer.ro.am/docs/api/group-add): adding an email
+to a group does not mint a badge or send the invite. Typical onboarding is
+`guest.badge.create` then `group.add`.
+
+Repeating create for the same host and email returns the existing badge
+(`visitPermission` is **not** updated) and does not re-send the invite.
+To flip on-map access after create, use
+[`guest.badge.update`](https://developer.ro.am/docs/api/guest-badge-update).
+
+**Access:** Organization and Personal.
+Organization tokens require `hostUserId`. Personal tokens default to the
+token owner; naming a different host returns `403` `access_mode_not_supported`.
+
+**Required scope:** `guest:write`. Personal Access Tokens use the
+`pat:guests:write` group.
+
+See [Guest Badges](https://developer.ro.am/docs/guides/guest-badges).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.GuestBadgeCreateRequest{
+    Email: "alex@client.example",
+    HostUserID: roamhq.String(
+        "3f1c0b2a-8d4e-4c91-9a7b-2e6f1d8c0a11",
+    ),
+}
+client.GuestBadges.GuestBadgeCreate(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**email:** `string` — Guest email. ASCII only. Must not be a workspace member.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostUserID:** `*string` 
+
+Host member. UUID or member email — the same convention as
+[`group.create`](https://developer.ro.am/docs/api/group-create) `members[].userId`.
+Required for organization tokens. Optional for personal tokens
+(defaults to the token owner).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**visitPermission:** `*bool` 
+
+Whether the guest may visit the host on the map. Defaults to
+`true`. Ignored on an idempotent retry of an existing grant
+— use [`guest.badge.update`](https://developer.ro.am/docs/api/guest-badge-update)
+to change it.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.GuestBadges.GuestBadgeList() -> *roamhq.GuestBadgeListResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List issued Guest Badges.
+
+Organization tokens return every issued badge in the workspace. Personal
+tokens return only badges the token owner issued. This is the issued
+(host) view — the same rows `guest.badge.create` returns — not the
+guest's hidden-inbox view.
+
+Filter with `email` (alias-aware) and/or `hostUserId` (UUID or member
+email). Paginate with `limit` / `cursor` (default 50, max 100). Results
+are sorted by `(hostUserId, email)`.
+
+Organization keys that only have `guest:write` must also request
+`guest:read` to call list. Personal Access Tokens with `pat:guests:write`
+already include `guest:read`.
+
+**Access:** Organization and Personal.
+Personal tokens naming a different host return `403`
+`access_mode_not_supported`.
+
+**Required scope:** `guest:read`. Personal Access Tokens use the
+`pat:guests:write` group.
+
+See [Guest Badges](https://developer.ro.am/docs/guides/guest-badges).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.GuestBadgeListRequest{}
+client.GuestBadges.GuestBadgeList(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**email:** `*string` 
+
+Guest email. ASCII only. Matches the stored address and its verified
+domain aliases.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostUserID:** `*string` 
+
+Host member. UUID or member email — the same convention as
+[`group.create`](https://developer.ro.am/docs/api/group-create) `members[].userId`.
+Archived hosts may be named (they typically have no remaining grants).
+Personal tokens may only pass the token owner.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — Number of badges to return per page (default 50, max 100).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cursor:** `*string` — Opaque pagination cursor from a previous response's `nextCursor`. Do not construct cursors manually.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.GuestBadges.GuestBadgeUpdate(request) -> *roamhq.GuestBadge</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update `visitPermission` on an existing Guest Badge.
+
+[`guest.badge.create`](https://developer.ro.am/docs/api/guest-badge-create) is idempotent and
+does **not** change `visitPermission` on an existing grant. Use this
+endpoint to flip on-map visit access after create.
+
+If only one host in the workspace has granted this email, `hostUserId`
+may be omitted. If several hosts have, pass `hostUserId` to pick which
+grant to update (`400` `missing_parameter` otherwise). Same-host alias
+rows are updated together.
+
+Personal tokens can only update badges they issued. Naming another host
+is `403` `access_mode_not_supported`; omitting `hostUserId` when the
+token owner has no matching grant is `404` `not_found`.
+
+**Access:** Organization and Personal.
+
+**Required scope:** `guest:write`. Personal Access Tokens use the
+`pat:guests:write` group.
+
+See [Guest Badges](https://developer.ro.am/docs/guides/guest-badges).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.GuestBadgeUpdateRequest{
+    Email: "alex@client.example",
+    HostUserID: roamhq.String(
+        "3f1c0b2a-8d4e-4c91-9a7b-2e6f1d8c0a11",
+    ),
+    VisitPermission: false,
+}
+client.GuestBadges.GuestBadgeUpdate(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**email:** `string` — Guest email. ASCII only.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostUserID:** `*string` 
+
+Host member. UUID or member email. Required when more than one
+host has granted this email. Optional for a unique grant, and
+for personal tokens (defaults to the token owner).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**visitPermission:** `bool` — Whether the guest may visit the host on the map.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.GuestBadges.GuestBadgeRevoke(request) -> *roamhq.GuestBadgeRevokeResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Revoke Guest Badge(s) for an email.
+
+If only one host in the workspace has granted this email, `hostUserId` may
+be omitted. If several hosts have, pass `hostUserId` to pick which grant
+to revoke (`400` `missing_parameter` otherwise). Same-host alias rows are
+all revoked together.
+
+Returns `{ "revoked": true }` when a matching grant was found and deleted,
+or `{ "revoked": false }` when there was nothing to revoke (already gone,
+including after the host was archived — archiving a member deletes the
+badges they granted). Naming an archived host does not 404.
+
+Personal tokens can only revoke badges they issued. Naming another host is
+`403` `access_mode_not_supported`; omitting `hostUserId` when only another
+host granted the email is a no-op (`revoked: false`).
+
+**Access:** Organization and Personal.
+
+**Required scope:** `guest:write`. Personal Access Tokens use the
+`pat:guests:write` group.
+
+See [Guest Badges](https://developer.ro.am/docs/guides/guest-badges).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.GuestBadgeRevokeRequest{
+    Email: "alex@client.example",
+}
+client.GuestBadges.GuestBadgeRevoke(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**email:** `string` — Guest email. ASCII only.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostUserID:** `*string` 
+
+Host member. UUID or member email. Required when more than one
+host has granted this email. Optional for a unique grant, and
+for personal tokens (defaults to the token owner).
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Token
 <details><summary><code>client.Token.Info() -> *roamhq.InfoTokenResponse</code></summary>
 <dl>
@@ -6130,7 +6992,37 @@ v0-only — sending them here returns `400` / `Unrecognized event`.
 Roam does not probe the destination URL when you subscribe — the
 subscription is created immediately and the first delivery is a real event.
 
-See the [Webhooks overview](https://developer.ro.am/docs/webhooks/webhooks) for the full list of event names and their filters.
+Optional `filter` limits which occurrences are delivered. Which keys are
+valid depends on `event` — see that event's page and the
+[Event Filters](https://developer.ro.am/docs/webhooks/webhooks#event-filters) table. Omit
+`filter` to receive every occurrence. An empty object (`{}`) is rejected,
+as is a filter that does not apply to the event.
+
+**DMs only:**
+
+```json
+{
+  "url": "https://example.com/hooks/messages",
+  "event": "chat.message",
+  "filter": { "chatType": "dm" }
+}
+```
+
+**Grok Bot routine** (no ngrok). `destination.token` is write-only — list
+and subscribe responses echo `destination.type` only. See
+[Grok](https://developer.ro.am/docs/integrations/grok).
+
+```json
+{
+  "url": "https://api2.cursor.sh/automations/webhook/<id>",
+  "event": "chat.message",
+  "filter": { "self": true },
+  "destination": {
+    "type": "grok_bot",
+    "token": "<Grok routine sender key or whsec_…>"
+  }
+}
+```
 
 **Required scope:** `webhook:write`
 </dd>
@@ -6150,11 +7042,6 @@ See the [Webhooks overview](https://developer.ro.am/docs/webhooks/webhooks) for 
 request := &roamhq.WebhookSubscriptionRequest{
     URL: "https://example.com/hooks/messages",
     Event: roamhq.WebhookSubscriptionRequestEventChatMessage,
-    Filter: &roamhq.WebhookSubscriptionFilter{
-        Mention: roamhq.Bool(
-            true,
-        ),
-    },
 }
 client.Webhook.Subscribe(
     context.TODO(),
@@ -6191,6 +7078,11 @@ client.Webhook.Subscribe(
 <dd>
 
 **filter:** `*roamhq.WebhookSubscriptionFilter` 
+
+Optional event-specific filter. Which keys are valid depends on `event`
+(see the schema). Omit to receive every occurrence; `{}` and `null` are
+rejected rather than treated as "omitted". Example for DMs only:
+`{"chatType": "dm"}`.
     
 </dd>
 </dl>
@@ -6204,6 +7096,24 @@ Optional [API version](https://developer.ro.am/docs/guides/api-versioning) (`YYY
 this subscription's payload shape to. When omitted, the subscription is
 frozen at your integration's default version. Unsupported values return
 `400`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**destination:** `*roamhq.WebhookSubscriptionRequestDestination` 
+
+Optional delivery authentication. Omit for Standard Webhooks signed with
+the API client's `whsec_`. Set `type` to `grok_bot` to deliver to a
+[Grok Bot](https://developer.ro.am/docs/integrations/grok) webhook-routine URL: Roam signs with
+the routine's sender key (`Authorization: Bearer` plus
+`X-Grok-Signature`) or, if `token` is a `whsec_…` Standard Webhooks
+secret, uses that secret instead of the API client's. The token is
+write-only — subscribe and list responses echo `destination.type` only.
+Re-subscribe without this field leaves existing destination auth
+unchanged; send `"type": ""` to clear it.
     
 </dd>
 </dl>
