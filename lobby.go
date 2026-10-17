@@ -38,11 +38,12 @@ func (l *ListLobbyRequest) SetHandle(handle *string) {
 }
 
 var (
-	listBookingsLobbyRequestFieldLobbyID = big.NewInt(1 << 0)
-	listBookingsLobbyRequestFieldAfter   = big.NewInt(1 << 1)
-	listBookingsLobbyRequestFieldBefore  = big.NewInt(1 << 2)
-	listBookingsLobbyRequestFieldLimit   = big.NewInt(1 << 3)
-	listBookingsLobbyRequestFieldCursor  = big.NewInt(1 << 4)
+	listBookingsLobbyRequestFieldLobbyID   = big.NewInt(1 << 0)
+	listBookingsLobbyRequestFieldAfter     = big.NewInt(1 << 1)
+	listBookingsLobbyRequestFieldBefore    = big.NewInt(1 << 2)
+	listBookingsLobbyRequestFieldAscending = big.NewInt(1 << 3)
+	listBookingsLobbyRequestFieldLimit     = big.NewInt(1 << 4)
+	listBookingsLobbyRequestFieldCursor    = big.NewInt(1 << 5)
 )
 
 type ListBookingsLobbyRequest struct {
@@ -54,6 +55,12 @@ type ListBookingsLobbyRequest struct {
 	// The datetime until which to list bookings (YYYY-MM-DD or RFC-3339).
 	// Defaults to "now".
 	Before *time.Time `json:"-" url:"before,omitempty"`
+	// `true` sorts oldest-first. `false` sorts newest-first, even when
+	// `after` is set. When omitted, results are oldest-first if `after` is
+	// set and newest-first otherwise. Send the same value on every page;
+	// the cursor does not carry the direction. Accepts `true`/`false` or
+	// `1`/`0`.
+	Ascending *bool `json:"-" url:"ascending,omitempty"`
 	// The number of bookings to return per response. Default is 10.
 	Limit *int `json:"-" url:"limit,omitempty"`
 	// Opaque pagination cursor from a previous response's `nextCursor`. Do not construct cursors manually.
@@ -89,6 +96,13 @@ func (l *ListBookingsLobbyRequest) SetAfter(after *time.Time) {
 func (l *ListBookingsLobbyRequest) SetBefore(before *time.Time) {
 	l.Before = before
 	l.require(listBookingsLobbyRequestFieldBefore)
+}
+
+// SetAscending sets the Ascending field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListBookingsLobbyRequest) SetAscending(ascending *bool) {
+	l.Ascending = ascending
+	l.require(listBookingsLobbyRequestFieldAscending)
 }
 
 // SetLimit sets the Limit field and marks it as non-optional;

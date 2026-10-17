@@ -288,9 +288,10 @@ var (
 	historyChatRequestFieldThreadTimestamp = big.NewInt(1 << 3)
 	historyChatRequestFieldAfter           = big.NewInt(1 << 4)
 	historyChatRequestFieldBefore          = big.NewInt(1 << 5)
-	historyChatRequestFieldCursor          = big.NewInt(1 << 6)
-	historyChatRequestFieldLimit           = big.NewInt(1 << 7)
-	historyChatRequestFieldExpand          = big.NewInt(1 << 8)
+	historyChatRequestFieldAscending       = big.NewInt(1 << 6)
+	historyChatRequestFieldCursor          = big.NewInt(1 << 7)
+	historyChatRequestFieldLimit           = big.NewInt(1 << 8)
+	historyChatRequestFieldExpand          = big.NewInt(1 << 9)
 )
 
 type HistoryChatRequest struct {
@@ -312,6 +313,12 @@ type HistoryChatRequest struct {
 	// Sub-millisecond precision on datetimes is truncated. Defaults to
 	// "now".
 	Before *string `json:"-" url:"before,omitempty"`
+	// `true` sorts oldest-first. `false` sorts newest-first, even when
+	// `after` is set. When omitted, results are oldest-first if `after` is
+	// set and newest-first otherwise. Send the same value on every page;
+	// the cursor does not carry the direction. Accepts `true`/`false` or
+	// `1`/`0`.
+	Ascending *bool `json:"-" url:"ascending,omitempty"`
 	// Opaque pagination cursor from a previous response's `nextCursor`.
 	Cursor *string `json:"-" url:"cursor,omitempty"`
 	// Number of messages to return (default 10, max 200).
@@ -372,6 +379,13 @@ func (h *HistoryChatRequest) SetAfter(after *string) {
 func (h *HistoryChatRequest) SetBefore(before *string) {
 	h.Before = before
 	h.require(historyChatRequestFieldBefore)
+}
+
+// SetAscending sets the Ascending field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (h *HistoryChatRequest) SetAscending(ascending *bool) {
+	h.Ascending = ascending
+	h.require(historyChatRequestFieldAscending)
 }
 
 // SetCursor sets the Cursor field and marks it as non-optional;

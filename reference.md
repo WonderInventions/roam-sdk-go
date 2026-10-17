@@ -1382,13 +1382,21 @@ Messages with `contentType` of `text`, `voice`, or `poll` are returned. System m
 
 You must specify exactly one destination. Specifying multiple (e.g., both `chatId` and `groupId`) will return a 400 error.
 
-The ordering of results depends on the filter specified:
+The ordering of results depends on `ascending` and `after`:
 
-- When no parameters are provided, the most recent messages are returned,
-  sorted in reverse chronological order. This is equivalent to specifying `before`
-  as NOW and leaving `after` unspecified.
+- `ascending=true` sorts in forward chronological order (oldest first).
+  `ascending=false` sorts in reverse chronological order (newest first),
+  even when `after` is specified.
 
-- If `after` is specified, the results are sorted in forward chronological order.
+- When `ascending` is omitted and `after` is not specified, the most recent
+  messages are returned in reverse chronological order. This is equivalent
+  to specifying `before` as NOW and leaving `after` unspecified.
+
+- When `ascending` is omitted and `after` is specified, the results are
+  sorted in forward chronological order.
+
+Send the same `ascending` value on every page. The cursor marks where to
+resume, not which direction to sort.
 
 Either dates or datetimes may be specified. Date-only inputs (`YYYY-MM-DD`)
 are interpreted in the caller's timezone (see
@@ -1487,6 +1495,20 @@ The datetime until which to list messages (YYYY-MM-DD or RFC-3339).
 Date-only values are interpreted in the caller's timezone.
 Sub-millisecond precision on datetimes is truncated. Defaults to
 "now".
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ascending:** `*bool` 
+
+`true` sorts oldest-first. `false` sorts newest-first, even when
+`after` is set. When omitted, results are oldest-first if `after` is
+set and newest-first otherwise. Send the same value on every page;
+the cursor does not carry the direction. Accepts `true`/`false` or
+`1`/`0`.
     
 </dd>
 </dl>
@@ -2687,7 +2709,7 @@ when the token has `user:read.email`. Cannot be combined with `ids`.
 <dl>
 <dd>
 
-**expand:** `*string` — Comma-separated list of additional fields. Supported: `status` (requires `user:read.status`). Expanding `status` also returns `willReturn` when set.
+**expand:** `*string` — Comma-separated list of additional fields. Supported: `status` (requires `user:read.status`). Expanding `status` also returns `willReturn` when set. Write that field with `user.status.set` / `.clear`.
     
 </dd>
 </dl>
@@ -2779,7 +2801,7 @@ client.User.Info(
 <dl>
 <dd>
 
-**expand:** `*string` — Comma-separated list of additional fields to include. Supported: `status`, `available` (each requires `user:read.status`). Expanding `status` also returns `willReturn` when the user has a future out-of-office entry.
+**expand:** `*string` — Comma-separated list of additional fields to include. Supported: `status`, `available` (each requires `user:read.status`). Expanding `status` also returns `willReturn` when the user has a future out-of-office entry. Write that field with `user.status.set` / `.clear`.
     
 </dd>
 </dl>
@@ -2792,6 +2814,435 @@ client.User.Info(
 </details>
 
 ## Users
+<details><summary><code>client.Users.UserStatusSet(request) -> *roamhq.UserStatusSetResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Record an absence on a workspace member — the same Will Return Today /
+Out of Roam field the desktop client writes, already readable via
+[`user.info?expand=status`](https://developer.ro.am/docs/api/user-info) and
+[`user.status.update`](https://developer.ro.am/docs/webhooks/user-status-update).
+
+This is **not** [external activity](https://developer.ro.am/docs/guides/user-activity). Use
+`user.status.set` for HR absences (sick leave, vacation, parental leave,
+public holidays). Use `user.activity.set` for a short-lived on-map glow
+/ emoji (phone call, browser meeting).
+
+`willReturn` is last-writer-wins with the desktop client. Setting it
+does **not** check the user out, does **not** enable Do Not Disturb, and
+does **not** accept a `status` enum (`checkedIn` / `checkedOut` stay
+read-only).
+
+`outOfRoam` defaults to `true` (persistent Out of Roam, up to 2 years).
+Pass `outOfRoam: false` for same-day Will Return Today (`returnTime`
+must be less than 10 hours from now).
+
+Identify the user with `userId`: a bare UUID, tagged `U-…` ID, or
+ASCII email (same convention as `group.create` members). Third-party
+systems that only have an email do not need a UUID lookup first.
+
+See [Will Return / Out of Roam](https://developer.ro.am/docs/guides/user-status) for the two
+modes, persistence across check-in, and an HRIS example.
+
+**Access:** Organization and Personal. Organization tokens may target
+any active member in the workspace. Personal tokens (OAuth or PAT) may
+target only the token owner.
+
+**Required scope:** `user:write.status`. Personal Access Tokens skip
+this check; personal-mode OAuth installs must still request the scope.
+Reading the field back via `user.info` still needs `user:read.status`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.UserStatusSetRequest{
+    UserID: "ada@example.com",
+    WillReturn: &roamhq.UserStatusSetRequestWillReturn{
+        ReturnTime: roamhq.MustParseDateTime(
+            "2026-09-22T09:00:00Z",
+        ),
+        Reason: roamhq.String(
+            "On vacation",
+        ),
+        OutOfRoam: roamhq.Bool(
+            true,
+        ),
+    },
+}
+client.Users.UserStatusSet(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**userID:** `string` 
+
+Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+(same convention as `group.create` members). Personal
+tokens may only pass their own user. Does not require
+`user:read.email` — email is an identifier, not a
+disclosure.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**willReturn:** `*roamhq.UserStatusSetRequestWillReturn` 
+
+Absence to write. Required. Replaces any existing Will
+Return / Out of Roam on this user.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `*string` 
+
+Rejected. Check-in status is read-only; absences go in
+`willReturn`. Sending this field returns `400`
+`invalid_arguments`.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Users.UserStatusClear(request) -> error</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Remove the Will Return / Out of Roam previously written with
+[`user.status.set`](https://developer.ro.am/docs/api/user-status-set) or the desktop client.
+Clears both same-day Will Return Today and persistent Out of Roam.
+
+Clearing when nothing is set still returns **204**. This call does
+**not** change check-in status.
+
+See [Will Return / Out of Roam](https://developer.ro.am/docs/guides/user-status) for
+persistence, check-in interaction, and the HRIS lifecycle.
+
+**Access:** Organization and Personal. Organization tokens may target
+any active member in the workspace. Personal tokens (OAuth or PAT) may
+target only the token owner.
+
+**Required scope:** `user:write.status`. Personal Access Tokens skip
+this check; personal-mode OAuth installs must still request the scope.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.UserStatusClearRequest{
+    UserID: "ada@example.com",
+}
+client.Users.UserStatusClear(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**userID:** `string` 
+
+Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+(same convention as `group.create` members). Personal
+tokens may only pass their own user.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Users.UserStatusBubbleSet(request) -> *roamhq.UserStatusBubbleResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Replaces the shared UI/API thought bubble. Text is trimmed and limited to 1–20 Unicode code points. Omitted or null ttlSeconds defaults to 86400; integers from 300 through 86400 are accepted. Durations below 5 minutes or above 24 hours are rejected. Automatic map removal can take up to about a minute after expiration. Repeating set refreshes expiration. Sending expiresAt is rejected.
+
+See [Status bubbles](https://developer.ro.am/docs/guides/user-status-bubble).
+
+**Access:** Organization and Personal. Organization credentials may target an active user in the workspace. Personal OAuth and PATs may target only their owner. The workspace comes from the token.
+
+**Required scope:** `user:write.statusBubble`. PATs skip the scope check; personal OAuth requires the scope.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.UserStatusBubbleSetRequest{
+    UserID: "ada@example.com",
+    Text: "At lunch 🍎",
+    TTLSeconds: roamhq.Int64(
+        int64(3600),
+    ),
+}
+client.Users.UserStatusBubbleSet(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**userID:** `string` — Bare UUID, tagged U-… ID, or ASCII email of the target user.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**text:** `string` — Text to trim and store. Must contain 1–20 Unicode code points after trimming. Blank text is rejected.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ttlSeconds:** `*int64` — Optional duration. Omit or pass null for 24 hours. Durations outside 300–86400 seconds are rejected.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Users.UserStatusBubbleGet() -> *roamhq.UserStatusBubbleResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Returns the shared UI/API thought bubble, or null when no live bubble exists. Expired bubbles are omitted before storage cleanup runs.
+
+See [Status bubbles](https://developer.ro.am/docs/guides/user-status-bubble).
+
+**Access:** Organization and Personal. Organization credentials may target an active user in the workspace. Personal OAuth and PATs may target only their owner. The workspace comes from the token.
+
+**Required scope:** `user:read.statusBubble`. PATs skip the scope check; personal OAuth requires the scope.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.UserStatusBubbleGetRequest{
+    UserID: "userId",
+}
+client.Users.UserStatusBubbleGet(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**userID:** `string` — Bare UUID, tagged U-… ID, or ASCII email of the target user.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Users.UserStatusBubbleClear(request) -> error</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Clears the shared thought bubble, including a bubble written by the UI or another integration. Repeating clear is a successful no-op. This does not clear Will Return or external activities.
+
+See [Status bubbles](https://developer.ro.am/docs/guides/user-status-bubble).
+
+**Access:** Organization and Personal. Organization credentials may target an active user in the workspace. Personal OAuth and PATs may target only their owner. The workspace comes from the token.
+
+**Required scope:** `user:write.statusBubble`. PATs skip the scope check; personal OAuth requires the scope.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.UserStatusBubbleClearRequest{
+    UserID: "ada@example.com",
+}
+client.Users.UserStatusBubbleClear(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**userID:** `string` — Bare UUID, tagged U-… ID, or ASCII email of the target user.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.Users.UserActivitySet(request) -> *roamhq.UserActivity</code></summary>
 <dl>
 <dd>
@@ -2822,6 +3273,10 @@ your own rows.
 See [External activity](https://developer.ro.am/docs/guides/user-activity) for display, DND,
 TTL, stacking, and where the indicator appears on the map.
 
+Identify the user with `userId`: a bare UUID, tagged `U-…` ID, or
+ASCII email (same convention as `group.create` members). Third-party
+systems that only have an email do not need a UUID lookup first.
+
 **Access:** Organization and Personal. Organization tokens may target
 any user in the workspace. Personal tokens (OAuth or PAT) may target
 only the token owner.
@@ -2843,7 +3298,7 @@ this check; personal-mode OAuth installs must still request the scope.
 
 ```go
 request := &roamhq.UserActivitySetRequest{
-    UserID: "0cc74785-e31e-4403-aa5e-0cc7c1897e66",
+    UserID: "ada@example.com",
     ExternalID: "justcall:call:CA123",
     Display: &roamhq.UserActivityDisplay{
         Emoji: "📞",
@@ -2880,8 +3335,11 @@ client.Users.UserActivitySet(
 
 **userID:** `string` 
 
-Target user. Bare or tagged UUID. Personal tokens may only
-pass their own user.
+Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+(same convention as `group.create` members). Personal
+tokens may only pass their own user. Does not require
+`user:read.email` — email is an identifier, not a
+disclosure.
     
 </dd>
 </dl>
@@ -3009,7 +3467,7 @@ this check; personal-mode OAuth installs must still request the scope.
 
 ```go
 request := &roamhq.UserActivityClearRequest{
-    UserID: "0cc74785-e31e-4403-aa5e-0cc7c1897e66",
+    UserID: "ada@example.com",
     ExternalID: "justcall:call:CA123",
 }
 client.Users.UserActivityClear(
@@ -3032,8 +3490,9 @@ client.Users.UserActivityClear(
 
 **userID:** `string` 
 
-Target user. Bare or tagged UUID. Personal tokens may only
-pass their own user.
+Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+(same convention as `group.create` members). Personal
+tokens may only pass their own user.
     
 </dd>
 </dl>
@@ -3120,8 +3579,9 @@ client.Users.UserActivityList(
 
 **userID:** `string` 
 
-Target user. Bare or tagged UUID. Personal tokens may only pass
-their own user.
+Target user. Bare UUID, tagged `U-…` ID, or ASCII email
+(same convention as `group.create` members). Personal tokens
+may only pass their own user.
     
 </dd>
 </dl>
@@ -3394,7 +3854,7 @@ client.Conversation.List(
 <dl>
 <dd>
 
-**after:** `*time.Time` — Only return conversations that started after this ISO-8601 timestamp.
+**after:** `*time.Time` — Only return conversations that started after this ISO-8601 timestamp. When `ascending` is omitted, this also sorts oldest-first.
     
 </dd>
 </dl>
@@ -3402,7 +3862,13 @@ client.Conversation.List(
 <dl>
 <dd>
 
-**ascending:** `*bool` — Sort results in ascending order by start time. Default is descending (newest first).
+**ascending:** `*bool` 
+
+Sort by start time. `true` sorts oldest-first. `false` sorts
+newest-first, even when `after` is set. When omitted, results are
+oldest-first if `after` is set and newest-first otherwise. Send the
+same value on every page; the cursor does not carry the direction.
+Accepts `true`/`false` or `1`/`0`.
     
 </dd>
 </dl>
@@ -3553,8 +4019,10 @@ Get detailed information about a specific meeting, including AI-generated summar
 
 Participants are included inline up to the `maxParticipants` limit. For meetings with more participants, use [`/meeting.participants`](https://developer.ro.am/docs/api/meeting-participants) to paginate through the full list.
 
-**Access:** Organization and Personal. Personal tokens are limited to meetings
-the authenticated user participated in. Organization tokens without
+**Access:** Organization and Personal. Personal tokens can read any meeting
+the authenticated user can view in Roam: ones they participated in, plus
+ones shared with them, such as through a [folder](https://developer.ro.am/docs/api/folder-contents).
+Organization tokens without
 [`admin:meetings:read`](https://developer.ro.am/docs/guides/scopes#meeting-width-adminmeetingsread)
 are limited to meetings the install's bot has access to.
 
@@ -3632,7 +4100,7 @@ Pagination uses an **opaque cursor** (not a row offset). Pass `nextCursor`
 from a previous response as `cursor` to fetch the next page. Invalid cursors
 return `error: "invalid_cursor"` — see [Responses and Errors](https://developer.ro.am/docs/guides/responses-and-errors).
 
-**Access:** Organization and Personal. Personal access tokens restrict to meetings the authenticated user participated in.
+**Access:** Organization and Personal. Personal tokens can read any meeting the authenticated user can view in Roam: ones they participated in, plus ones shared with them, such as through a [folder](https://developer.ro.am/docs/api/folder-contents).
 
 **Required scope:** `meetings:read` and `user:read` (add `user:read.email` for participant emails)
 </dd>
@@ -3716,7 +4184,7 @@ Supports content negotiation:
 - **JSON** (default): Returns structured transcript with cues containing speaker IDs, text, and timing
 - **WebVTT**: Set `Accept: text/vtt` header to receive standard WebVTT format with speaker voice tags
 
-**Access:** Organization and Personal. Personal access tokens restrict to meetings the authenticated user participated in.
+**Access:** Organization and Personal. Personal tokens can read any meeting the authenticated user can view in Roam: ones they participated in, plus ones shared with them, such as through a [folder](https://developer.ro.am/docs/api/folder-contents).
 
 **Required scope:** `meetings:read`
 
@@ -3877,7 +4345,7 @@ client.Meeting.Search(
 
 Ask an AI question about a meeting's transcript content. Returns a natural language response based on the meeting transcript.
 
-**Access:** Organization and Personal. Personal access tokens restrict to meetings the authenticated user participated in.
+**Access:** Organization and Personal. Personal tokens can read any meeting the authenticated user can view in Roam: ones they participated in, plus ones shared with them, such as through a [folder](https://developer.ro.am/docs/api/folder-contents).
 
 **Required scope:** `meetings:read`
 </dd>
@@ -4328,13 +4796,21 @@ identifiers and is not a v1 media-download path.
 The plural alias `/recordings.list` is also registered for existing callers;
 use this singular form in new documentation and tooling.
 
-The ordering of results depends on the filter specified:
+The ordering of results depends on `ascending` and `after`:
 
-- When no parameters are provided, the most recent recordings are returned,
-  sorted in reverse chronological order. This is equivalent to specifying `before`
-  as NOW and leaving `after` unspecified.
+- `ascending=true` sorts in forward chronological order (oldest first).
+  `ascending=false` sorts in reverse chronological order (newest first),
+  even when `after` is specified.
 
-- If `after` is specified, the results are sorted in forward chronological order.
+- When `ascending` is omitted and `after` is not specified, the most recent
+  recordings are returned in reverse chronological order. This is equivalent
+  to specifying `before` as NOW and leaving `after` unspecified.
+
+- When `ascending` is omitted and `after` is specified, the results are
+  sorted in forward chronological order.
+
+Send the same `ascending` value on every page. The cursor marks where to
+resume, not which direction to sort.
 
 Either dates or datetimes may be specified. Dates are interpreted in UTC.
 
@@ -4389,6 +4865,20 @@ Defaults to "no filter".
 
 The datetime until which to list recordings (YYYY-MM-DD or RFC-3339).
 Defaults to "now".
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ascending:** `*bool` 
+
+`true` sorts oldest-first. `false` sorts newest-first, even when
+`after` is set. When omitted, results are oldest-first if `after` is
+set and newest-first otherwise. Send the same value on every page;
+the cursor does not carry the direction. Accepts `true`/`false` or
+`1`/`0`.
     
 </dd>
 </dl>
@@ -4771,13 +5261,21 @@ Filter by lobby handle (first path segment), e.g., `robfig` for
 
 Lists bookings for a specific lobby configuration, filtered by date range (after/before).
 
-The ordering of results depends on the filter specified:
+The ordering of results depends on `ascending` and `after`:
 
-- When no parameters are provided, the most recent bookings are returned,
-  sorted in reverse chronological order. This is equivalent to specifying `before`
-  as NOW and leaving `after` unspecified.
+- `ascending=true` sorts in forward chronological order (oldest first).
+  `ascending=false` sorts in reverse chronological order (newest first),
+  even when `after` is specified.
 
-- If `after` is specified, the results are sorted in forward chronological order.
+- When `ascending` is omitted and `after` is not specified, the most recent
+  bookings are returned in reverse chronological order. This is equivalent
+  to specifying `before` as NOW and leaving `after` unspecified.
+
+- When `ascending` is omitted and `after` is specified, the results are
+  sorted in forward chronological order.
+
+Send the same `ascending` value on every page. The cursor marks where to
+resume, not which direction to sort.
 
 Either dates or datetimes may be specified. Dates are interpreted in UTC.
 
@@ -4849,6 +5347,20 @@ Defaults to "now".
 <dl>
 <dd>
 
+**ascending:** `*bool` 
+
+`true` sorts oldest-first. `false` sorts newest-first, even when
+`after` is set. When omitted, results are oldest-first if `after` is
+set and newest-first otherwise. Send the same value on every page;
+the cursor does not carry the direction. Accepts `true`/`false` or
+`1`/`0`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **limit:** `*int` — The number of bookings to return per response. Default is 10.
     
 </dd>
@@ -4882,7 +5394,9 @@ Defaults to "now".
 <dl>
 <dd>
 
-List Magicasts in your account, most recent first.
+List Magicasts in your account. Results are most recent first when
+neither `ascending` nor `after` is set. See `ascending` to change the
+order.
 
 Returns metadata only (`id`, `name`, `createdAt`, `ownerId`,
 `coverImageUrl`). Use [`/magicast.info`](https://developer.ro.am/docs/api/magicast-info) for
@@ -4926,7 +5440,7 @@ client.Magicast.List(
 <dl>
 <dd>
 
-**after:** `*time.Time` — Only return magicasts created after this time (RFC-3339).
+**after:** `*time.Time` — Only return magicasts created after this time (RFC-3339). When `ascending` is omitted, this also sorts oldest-first.
     
 </dd>
 </dl>
@@ -4942,7 +5456,13 @@ client.Magicast.List(
 <dl>
 <dd>
 
-**ascending:** `*bool` — Sort oldest-first instead of newest-first.
+**ascending:** `*bool` 
+
+`true` sorts oldest-first. `false` sorts newest-first, even when
+`after` is set. When omitted, results are oldest-first if `after` is
+set and newest-first otherwise. Send the same value on every page;
+the cursor does not carry the direction. Accepts `true`/`false` or
+`1`/`0`.
     
 </dd>
 </dl>
@@ -5001,7 +5521,9 @@ always `https://ro.am/share/{key}`.
 
 **Access:** Organization and Personal. Organization tokens can read every
 Magicast in the account, including ones the creator never shared. Personal
-tokens are restricted to Magicasts owned by the authenticated user. Filter
+tokens can read Magicasts in the account that the authenticated user can
+view in Roam: their own, plus ones shared with them, such as through a
+[folder](https://developer.ro.am/docs/api/folder-contents). Filter
 on whether `shareUrl` is present if you only want shared recordings.
 
 **Required scope:** `magicast:read`
@@ -5125,6 +5647,1246 @@ client.Magicasts.MagicastShareLink(
 <dd>
 
 **id:** `string` — The Magicast ID.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Folder
+<details><summary><code>client.Folder.List() -> *roamhq.ListFolderResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List folders of meetings and Magicasts, newest first.
+
+**Access:** Organization and Personal. Personal tokens return only folders
+the token owner belongs to, each with that person's `role` (`admin` or
+`viewer`). Organization tokens return every folder in the account, and
+`role` is omitted.
+
+**Required scope:** `folders:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.ListFolderRequest{}
+client.Folder.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**after:** `*time.Time` 
+
+Only return folders created after this time (RFC-3339 or `YYYY-MM-DD`).
+Results switch to oldest-first. Sub-millisecond precision is truncated.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**before:** `*time.Time` 
+
+Only return folders created before this time (RFC-3339 or `YYYY-MM-DD`).
+Sub-millisecond precision is truncated.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — Number of folders to return per page. Default 10, maximum 100.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cursor:** `*string` — Opaque pagination cursor from a previous response's `nextCursor`. Do not construct cursors manually.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Folder.Info() -> *roamhq.InfoFolderResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Get one folder by ID: name, item count, creation time, and — for Personal
+access — the caller's role.
+
+Use [`folder.contents`](https://developer.ro.am/docs/api/folder-contents) for the meetings and
+Magicasts filed in it, and [`folder.members`](https://developer.ro.am/docs/api/folder-members)
+for who can see it.
+
+**Access:** Organization and Personal. Personal tokens can read a folder
+only when the token owner is a member. Organization tokens can read every
+folder in the account; `role` is omitted. A folder the caller cannot see
+returns `404` `folder_not_found`, including a folder in another account
+and a folder a personal token's owner does not belong to.
+
+**Required scope:** `folders:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.InfoFolderRequest{
+    ID: "id",
+}
+client.Folder.Info(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — Folder ID.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Folder.Contents() -> *roamhq.ContentsFolderResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List the meetings and Magicasts filed in a folder, newest first, with
+each item's metadata.
+
+Reading the folder is what grants access to these rows. A meeting or
+Magicast is included even when the caller would not see it on
+[`meeting.list`](https://developer.ro.am/docs/api/meeting-list) or
+[`magicast.list`](https://developer.ro.am/docs/api/magicast-list). If the item was deleted after
+it was filed, `type`, `id`, and `addedAt` are still returned and the
+embedded `meeting` or `magicast` object is omitted.
+
+A personal token that can read the folder can then call
+[`meeting.info`](https://developer.ro.am/docs/api/meeting-info),
+[`meeting.transcript`](https://developer.ro.am/docs/api/meeting-transcript), and
+[`meeting.prompt`](https://developer.ro.am/docs/api/meeting-prompt) for a filed meeting, and
+[`magicast.info`](https://developer.ro.am/docs/api/magicast-info) for a filed Magicast. Those
+calls need `meetings:read` or `magicast:read` in addition to
+`folders:read`. [`magicast.shareLink`](https://developer.ro.am/docs/api/magicast-share-link)
+stays limited to the Magicast owner. Organization follow-ups on meetings
+still follow [Meeting width](https://developer.ro.am/docs/guides/scopes#meeting-width-adminmeetingsread).
+
+**Access:** Organization and Personal. Same visibility as
+[`folder.info`](https://developer.ro.am/docs/api/folder-info): a folder the caller cannot see
+returns `404` `folder_not_found`.
+
+**Required scope:** `folders:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.ContentsFolderRequest{
+    ID: "id",
+}
+client.Folder.Contents(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — Folder ID.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**type_:** `*roamhq.ContentsFolderRequestType` — Only return this kind of item. Omit to return both.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*time.Time` 
+
+Only return items filed after this time (RFC-3339 or `YYYY-MM-DD`).
+Results switch to oldest-first. Sub-millisecond precision is truncated.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**before:** `*time.Time` 
+
+Only return items filed before this time (RFC-3339 or `YYYY-MM-DD`).
+Sub-millisecond precision is truncated.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — Number of items to return per page. Default 10, maximum 100.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cursor:** `*string` — Opaque pagination cursor from a previous response's `nextCursor`. Do not construct cursors manually.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Folder.Members() -> *roamhq.MembersFolderResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List everyone who belongs to a folder and their role (`admin` or
+`viewer`). The full member list is returned in one response.
+
+Every `userId` is a principal ID. Resolve names with
+[`user.info`](https://developer.ro.am/docs/api/user-info) or
+[`user.list`](https://developer.ro.am/docs/api/user-list), which require `user:read`.
+
+**Access:** Organization and Personal. Same visibility as
+[`folder.info`](https://developer.ro.am/docs/api/folder-info): a folder the caller cannot see
+returns `404` `folder_not_found`.
+
+**Required scope:** `folders:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.MembersFolderRequest{
+    ID: "id",
+}
+client.Folder.Members(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — Folder ID.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Folder.Create(request) -> *roamhq.CreateFolderResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Create a folder for meetings and Magicasts. The new folder is visible only
+to its members: file items with [`folder.addContents`](https://developer.ro.am/docs/api/folder-add-contents)
+and share it with [`folder.addMembers`](https://developer.ro.am/docs/api/folder-add-members).
+
+**Access:** Organization and Personal. With a personal token, the token's
+owner becomes the folder's `admin`; `ownerId` is not accepted. With an
+organization token, `ownerId` is required and names the person in the
+account who becomes the `admin`. Account admins get no implicit access to
+folders in Roam, so a folder must start with a person who can see it.
+
+**Required scope:** `folders:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.CreateFolderRequest{
+    Name: "Customer calls",
+}
+client.Folder.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `string` — Folder name. Leading and trailing whitespace is trimmed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ownerID:** `*string` 
+
+User ID of the person who becomes the folder's `admin`.
+Required for Organization access; rejected for Personal access.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Folder.Rename(request) -> *roamhq.RenameFolderResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Rename a folder by ID.
+
+**Access:** Organization and Personal. Personal tokens need the `admin` role
+on the folder: a viewer gets `403` `access_denied`, and a folder the token's
+owner does not belong to returns `404` `folder_not_found`. Organization
+tokens can change every folder in the account.
+
+**Required scope:** `folders:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.RenameFolderRequest{
+    ID: "019a0000-0000-7000-8000-0000000000f1",
+    Name: "Sales calls",
+}
+client.Folder.Rename(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — Folder ID.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `string` — New folder name. Leading and trailing whitespace is trimmed.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Folder.Delete(request) -> *roamhq.DeleteFolderResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete a folder. Members lose the access the folder gave them; the
+meetings and Magicasts filed in it are not deleted, and anyone who could
+see an item another way keeps that access.
+
+**Access:** Organization and Personal. Personal tokens need the `admin` role
+on the folder: a viewer gets `403` `access_denied`, and a folder the token's
+owner does not belong to returns `404` `folder_not_found`. Organization
+tokens can change every folder in the account.
+
+**Required scope:** `folders:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.DeleteFolderRequest{
+    ID: "019a0000-0000-7000-8000-0000000000f1",
+}
+client.Folder.Delete(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — Folder ID.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Folder.AddContents(request) -> *roamhq.AddContentsFolderResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+File up to 100 meetings and Magicasts into a folder in one call. Every
+folder member can then read them with [`meeting.info`](https://developer.ro.am/docs/api/meeting-info),
+[`meeting.transcript`](https://developer.ro.am/docs/api/meeting-transcript),
+[`magicast.info`](https://developer.ro.am/docs/api/magicast-info), and the related endpoints.
+Filing an item that is already in the folder succeeds and changes nothing.
+
+**Access:** Organization and Personal. Personal tokens need the `admin` role
+on the folder: a viewer gets `403` `access_denied`, and a folder the token's
+owner does not belong to returns `404` `folder_not_found`. Organization
+tokens can change every folder in the account. Personal tokens can only file items the
+token's owner can view. Organization tokens can file meetings from any roam
+in the account and Magicasts owned by the account. Any other item fails
+the whole call with `404` `meeting_not_found` or `magicast_not_found`, and
+nothing is filed.
+
+**Required scope:** `folders:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.AddContentsFolderRequest{
+    ID: "019a0000-0000-7000-8000-0000000000f1",
+    MeetingIDs: []string{
+        "019a0000-0000-7000-8000-0000000000e1",
+    },
+    MagicastIDs: []string{
+        "019a0000-0000-7000-8000-0000000000c1",
+    },
+}
+client.Folder.AddContents(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — Folder ID.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**meetingIDs:** `[]string` — Meeting IDs, as returned by [`meeting.list`](https://developer.ro.am/docs/api/meeting-list).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**magicastIDs:** `[]string` — Magicast IDs, as returned by [`magicast.list`](https://developer.ro.am/docs/api/magicast-list).
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Folder.RemoveContents(request) -> *roamhq.RemoveContentsFolderResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Remove up to 100 meetings and Magicasts from a folder in one call. The
+items are not deleted; folder members lose the access the folder gave
+them. Removing an item that is not in the folder succeeds and changes
+nothing.
+
+**Access:** Organization and Personal. Personal tokens need the `admin` role
+on the folder: a viewer gets `403` `access_denied`, and a folder the token's
+owner does not belong to returns `404` `folder_not_found`. Organization
+tokens can change every folder in the account.
+
+**Required scope:** `folders:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.RemoveContentsFolderRequest{
+    ID: "019a0000-0000-7000-8000-0000000000f1",
+    MeetingIDs: []string{
+        "019a0000-0000-7000-8000-0000000000e1",
+    },
+    MagicastIDs: []string{
+        "019a0000-0000-7000-8000-0000000000c1",
+    },
+}
+client.Folder.RemoveContents(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — Folder ID.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**meetingIDs:** `[]string` — Meeting IDs, as returned by [`meeting.list`](https://developer.ro.am/docs/api/meeting-list).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**magicastIDs:** `[]string` — Magicast IDs, as returned by [`magicast.list`](https://developer.ro.am/docs/api/magicast-list).
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Folder.AddMembers(request) -> *roamhq.AddMembersFolderResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Add up to 100 people to a folder with the same role, or change the role
+of people who are already members. `admin` members can manage the folder;
+`viewer` members can see it and everything filed in it. Demoting the last
+`admin` to `viewer` returns `409` `conflict`.
+
+**Access:** Organization and Personal. Personal tokens need the `admin` role
+on the folder: a viewer gets `403` `access_denied`, and a folder the token's
+owner does not belong to returns `404` `folder_not_found`. Organization
+tokens can change every folder in the account. Members must be people in the
+folder's account.
+
+**Required scope:** `folders:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.AddMembersFolderRequest{
+    ID: "019a0000-0000-7000-8000-0000000000f1",
+    UserIDs: []string{
+        "709b8a57-70bc-427a-b6f0-b16ba5297f8c",
+        "af6663d5-0f37-4105-95df-4fea20ef7c7c",
+    },
+    Role: roamhq.AddMembersFolderRequestRoleViewer.Ptr(),
+}
+client.Folder.AddMembers(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — Folder ID.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**userIDs:** `[]string` — User IDs of the people to add or update.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**role:** `*roamhq.AddMembersFolderRequestRole` — Role to give every listed person.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Folder.RemoveMembers(request) -> *roamhq.RemoveMembersFolderResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Remove up to 100 people from a folder. They lose the access the folder
+gave them. Removing the last `admin` returns `409` `conflict`; promote
+someone else with [`folder.addMembers`](https://developer.ro.am/docs/api/folder-add-members)
+first.
+
+**Access:** Organization and Personal. Personal tokens need the `admin` role
+on the folder: a viewer gets `403` `access_denied`, and a folder the token's
+owner does not belong to returns `404` `folder_not_found`. Organization
+tokens can change every folder in the account.
+
+**Required scope:** `folders:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.RemoveMembersFolderRequest{
+    ID: "019a0000-0000-7000-8000-0000000000f1",
+    UserIDs: []string{
+        "af6663d5-0f37-4105-95df-4fea20ef7c7c",
+    },
+}
+client.Folder.RemoveMembers(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — Folder ID.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**userIDs:** `[]string` — User IDs of the members to remove.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Ticker
+<details><summary><code>client.Ticker.List() -> *roamhq.ListTickerResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List the posts on the ticker, the strip that scrolls announcements, goals,
+and wins across the Roam. The list includes posts members created in the
+Roam app and posts integrations created through the API; compare each
+post's `authorId` with `user.id` from [`token.info`](https://developer.ro.am/docs/api/token-info)
+to find your own.
+
+Posts are returned in display order: the order people arranged them in the
+Roam app, not the order they were created. The ticker holds at most 50
+posts, so every post comes back in one response; there is no pagination.
+
+No webhooks fire when posts change. Call this endpoint to see the current
+posts.
+
+Admins can turn the ticker off in Roam Administration (the "Ticker"
+setting). While it is off, this call still succeeds, with `enabled: false`
+and an empty `messages` list. Turning the ticker off permanently deletes
+every post, and it starts empty when turned back on, so post IDs you saved
+no longer exist.
+
+**Access:** Organization only (API Key or OAuth with admin consent).
+Personal tokens, including Personal Access Tokens, get `403`
+`access_mode_not_supported`.
+
+**Required scope:** `ticker:read`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+client.Ticker.List(
+    context.TODO(),
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Ticker.Post(request) -> *roamhq.PostTickerResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Add a post to the ticker. The post is created as your integration's bot
+and appears to people in the Roam immediately. Posts don't expire; a post
+stays until someone deletes it.
+
+The new post goes at the end of the ticker. To place it next to an existing
+post, pass that post's ID as `beforeId` or `afterId` (not both). The anchor
+can be any post on the ticker, whoever created it. People can reorder posts
+in the Roam app and there is no endpoint to reorder them, so a post may not
+stay where you put it.
+
+The ticker holds at most 50 posts, shared by members and integrations. When
+it is full, this call returns `409` `ticker_full`; delete a post with
+[`ticker.delete`](https://developer.ro.am/docs/api/ticker-delete) first. There is no edit
+endpoint either: to change a post, delete it and post it again.
+
+This call is not idempotent. If a request times out and you can't tell
+whether it succeeded, call [`ticker.list`](https://developer.ro.am/docs/api/ticker-list) and check
+for the post before retrying, or you may create a duplicate.
+
+**Access:** Organization only (API Key or OAuth with admin consent).
+Personal tokens, including Personal Access Tokens, get `403`
+`access_mode_not_supported`.
+
+**Required scope:** `ticker:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.PostTickerRequest{
+    Category: "announcement",
+    Text: "v4.2 is live for every customer",
+    URL: roamhq.String(
+        "https://example.com/changelog/4-2",
+    ),
+}
+client.Ticker.Post(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**category:** `string` 
+
+Lowercase label shown with the post, 1–16 characters after
+trimming whitespace. Uppercase `A`–`Z` is rejected, not
+converted. `announcement`, `goal`, and `news` are suggestions,
+not a fixed list.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**text:** `string` 
+
+Post text, as plain text. Leading and trailing whitespace is
+trimmed, and the result must be 1–300 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**url:** `*string` 
+
+Link the post opens: an `http` or `https` URL whose host is a
+domain name, not an IP address or a single-label host such as
+`localhost`. Omit it for a post with no link; an empty string
+is rejected.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**beforeID:** `*string` 
+
+ID of a post on the ticker. The new post is inserted
+immediately before it. Cannot be combined with `afterId`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**afterID:** `*string` 
+
+ID of a post on the ticker. The new post is inserted
+immediately after it. Cannot be combined with `beforeId`.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Ticker.Delete(request) -> *roamhq.DeleteTickerResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Delete a post from the ticker.
+
+Your integration can delete only posts its own app created. A post created
+by a member or by another app returns `403` `access_denied`. Ownership
+follows the app, not the token: every organization token of an OAuth app
+posts as the same bot, so a post created with one token can be deleted
+with another. Each API key is its own app with its own bot, so a post
+created with one API key cannot be deleted with a different key. Admins can
+delete any post in the Roam app, including your integration's.
+
+A post that doesn't exist, was already deleted, or is in another Roam
+returns `404` `ticker_message_not_found`; treat it as already gone. While
+an admin has the ticker turned off, this call returns `403`
+`ticker_disabled`, even for a post that would otherwise be found.
+
+**Access:** Organization only (API Key or OAuth with admin consent).
+Personal tokens, including Personal Access Tokens, get `403`
+`access_mode_not_supported`.
+
+**Required scope:** `ticker:write`
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.DeleteTickerRequest{
+    ID: "019a0000-0000-7000-8000-0000000000a2",
+}
+client.Ticker.Delete(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — ID of the post to delete.
     
 </dd>
 </dl>
@@ -5319,6 +7081,9 @@ mode, where only admins may change settings. Otherwise, all members have
 that capability.
 
 Groups require at least one member. Users can be specified by user ID or email address.
+Unrecognized emails are invited as group members only — they do not receive a
+[Guest Badge](https://developer.ro.am/docs/guides/guest-badges) unless you also call
+[`guest.badge.create`](https://developer.ro.am/docs/api/guest-badge-create).
 
 **Required scope:** `group:write`
 </dd>
@@ -5662,6 +7427,8 @@ Add one or more group members with specified roles.
 
 Members can be specified by user ID or email address. Each member must be assigned a role (member or admin).
 
+Adding an unrecognized email does **not** grant a [Guest Badge](https://developer.ro.am/docs/guides/guest-badges). Use [`guest.badge.create`](https://developer.ro.am/docs/api/guest-badge-create) first if the person is not a workspace member.
+
 Apps may add members to a group if one of the following conditions is true:
 1. It is a public group in their Roam.
 2. They are a member of the group.
@@ -5944,6 +7711,425 @@ client.Groups.List(
 </dl>
 </details>
 
+## Guest Badges
+<details><summary><code>client.GuestBadges.GuestBadgeCreate(request) -> *roamhq.GuestBadge</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Grant a Guest Badge so an email that is **not** a workspace member can
+visit a host in Roam.
+
+This is **not** an [On-Air event guest](https://developer.ro.am/docs/onair-api/on-air-api). It is
+also **not** implied by [`group.add`](https://developer.ro.am/docs/api/group-add): adding an email
+to a group does not mint a badge or send the invite. Typical onboarding is
+`guest.badge.create` then `group.add`.
+
+Repeating create for the same host and email returns the existing badge
+(`visitPermission` is **not** updated) and does not re-send the invite.
+To flip on-map access after create, use
+[`guest.badge.update`](https://developer.ro.am/docs/api/guest-badge-update).
+
+**Access:** Organization and Personal.
+Organization tokens require `hostUserId`. Personal tokens default to the
+token owner; naming a different host returns `403` `access_mode_not_supported`.
+
+**Required scope:** `guest:write`. Personal Access Tokens use the
+`pat:guests:write` group.
+
+See [Guest Badges](https://developer.ro.am/docs/guides/guest-badges).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.GuestBadgeCreateRequest{
+    Email: "alex@client.example",
+    HostUserID: roamhq.String(
+        "3f1c0b2a-8d4e-4c91-9a7b-2e6f1d8c0a11",
+    ),
+}
+client.GuestBadges.GuestBadgeCreate(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**email:** `string` — Guest email. ASCII only. Must not be a workspace member.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostUserID:** `*string` 
+
+Host member. UUID or member email — the same convention as
+[`group.create`](https://developer.ro.am/docs/api/group-create) `members[].userId`.
+Required for organization tokens. Optional for personal tokens
+(defaults to the token owner).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**visitPermission:** `*bool` 
+
+Whether the guest may visit the host on the map. Defaults to
+`true`. Ignored on an idempotent retry of an existing grant
+— use [`guest.badge.update`](https://developer.ro.am/docs/api/guest-badge-update)
+to change it.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.GuestBadges.GuestBadgeList() -> *roamhq.GuestBadgeListResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+List issued Guest Badges.
+
+Organization tokens return every issued badge in the workspace. Personal
+tokens return only badges the token owner issued. This is the issued
+(host) view — the same rows `guest.badge.create` returns — not the
+guest's hidden-inbox view.
+
+Filter with `email` (alias-aware) and/or `hostUserId` (UUID or member
+email). Paginate with `limit` / `cursor` (default 50, max 100). Results
+are sorted by `(hostUserId, email)`.
+
+Organization keys that only have `guest:write` must also request
+`guest:read` to call list. Personal Access Tokens with `pat:guests:write`
+already include `guest:read`.
+
+**Access:** Organization and Personal.
+Personal tokens naming a different host return `403`
+`access_mode_not_supported`.
+
+**Required scope:** `guest:read`. Personal Access Tokens use the
+`pat:guests:write` group.
+
+See [Guest Badges](https://developer.ro.am/docs/guides/guest-badges).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.GuestBadgeListRequest{}
+client.GuestBadges.GuestBadgeList(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**email:** `*string` 
+
+Guest email. ASCII only. Matches the stored address and its verified
+domain aliases.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostUserID:** `*string` 
+
+Host member. UUID or member email — the same convention as
+[`group.create`](https://developer.ro.am/docs/api/group-create) `members[].userId`.
+Archived hosts may be named (they typically have no remaining grants).
+Personal tokens may only pass the token owner.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — Number of badges to return per page (default 50, max 100).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cursor:** `*string` — Opaque pagination cursor from a previous response's `nextCursor`. Do not construct cursors manually.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.GuestBadges.GuestBadgeUpdate(request) -> *roamhq.GuestBadge</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Update `visitPermission` on an existing Guest Badge.
+
+[`guest.badge.create`](https://developer.ro.am/docs/api/guest-badge-create) is idempotent and
+does **not** change `visitPermission` on an existing grant. Use this
+endpoint to flip on-map visit access after create.
+
+If only one host in the workspace has granted this email, `hostUserId`
+may be omitted. If several hosts have, pass `hostUserId` to pick which
+grant to update (`400` `missing_parameter` otherwise). Same-host alias
+rows are updated together.
+
+Personal tokens can only update badges they issued. Naming another host
+is `403` `access_mode_not_supported`; omitting `hostUserId` when the
+token owner has no matching grant is `404` `not_found`.
+
+**Access:** Organization and Personal.
+
+**Required scope:** `guest:write`. Personal Access Tokens use the
+`pat:guests:write` group.
+
+See [Guest Badges](https://developer.ro.am/docs/guides/guest-badges).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.GuestBadgeUpdateRequest{
+    Email: "alex@client.example",
+    HostUserID: roamhq.String(
+        "3f1c0b2a-8d4e-4c91-9a7b-2e6f1d8c0a11",
+    ),
+    VisitPermission: false,
+}
+client.GuestBadges.GuestBadgeUpdate(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**email:** `string` — Guest email. ASCII only.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostUserID:** `*string` 
+
+Host member. UUID or member email. Required when more than one
+host has granted this email. Optional for a unique grant, and
+for personal tokens (defaults to the token owner).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**visitPermission:** `bool` — Whether the guest may visit the host on the map.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.GuestBadges.GuestBadgeRevoke(request) -> *roamhq.GuestBadgeRevokeResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Revoke Guest Badge(s) for an email.
+
+If only one host in the workspace has granted this email, `hostUserId` may
+be omitted. If several hosts have, pass `hostUserId` to pick which grant
+to revoke (`400` `missing_parameter` otherwise). Same-host alias rows are
+all revoked together.
+
+Returns `{ "revoked": true }` when a matching grant was found and deleted,
+or `{ "revoked": false }` when there was nothing to revoke (already gone,
+including after the host was archived — archiving a member deletes the
+badges they granted). Naming an archived host does not 404.
+
+Personal tokens can only revoke badges they issued. Naming another host is
+`403` `access_mode_not_supported`; omitting `hostUserId` when only another
+host granted the email is a no-op (`revoked: false`).
+
+**Access:** Organization and Personal.
+
+**Required scope:** `guest:write`. Personal Access Tokens use the
+`pat:guests:write` group.
+
+See [Guest Badges](https://developer.ro.am/docs/guides/guest-badges).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &roamhq.GuestBadgeRevokeRequest{
+    Email: "alex@client.example",
+}
+client.GuestBadges.GuestBadgeRevoke(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**email:** `string` — Guest email. ASCII only.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostUserID:** `*string` 
+
+Host member. UUID or member email. Required when more than one
+host has granted this email. Optional for a unique grant, and
+for personal tokens (defaults to the token owner).
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Token
 <details><summary><code>client.Token.Info() -> *roamhq.InfoTokenResponse</code></summary>
 <dl>
@@ -6130,7 +8316,37 @@ v0-only — sending them here returns `400` / `Unrecognized event`.
 Roam does not probe the destination URL when you subscribe — the
 subscription is created immediately and the first delivery is a real event.
 
-See the [Webhooks overview](https://developer.ro.am/docs/webhooks/webhooks) for the full list of event names and their filters.
+Optional `filter` limits which occurrences are delivered. Which keys are
+valid depends on `event` — see that event's page and the
+[Event Filters](https://developer.ro.am/docs/webhooks/webhooks#event-filters) table. Omit
+`filter` to receive every occurrence. An empty object (`{}`) is rejected,
+as is a filter that does not apply to the event.
+
+**DMs only:**
+
+```json
+{
+  "url": "https://example.com/hooks/messages",
+  "event": "chat.message",
+  "filter": { "chatType": "dm" }
+}
+```
+
+**Grok Bot routine** (no ngrok). `destination.token` is write-only — list
+and subscribe responses echo `destination.type` only. See
+[Grok](https://developer.ro.am/docs/integrations/grok).
+
+```json
+{
+  "url": "https://api2.cursor.sh/automations/webhook/<id>",
+  "event": "chat.message",
+  "filter": { "self": true },
+  "destination": {
+    "type": "grok_bot",
+    "token": "<Grok routine sender key or whsec_…>"
+  }
+}
+```
 
 **Required scope:** `webhook:write`
 </dd>
@@ -6150,11 +8366,6 @@ See the [Webhooks overview](https://developer.ro.am/docs/webhooks/webhooks) for 
 request := &roamhq.WebhookSubscriptionRequest{
     URL: "https://example.com/hooks/messages",
     Event: roamhq.WebhookSubscriptionRequestEventChatMessage,
-    Filter: &roamhq.WebhookSubscriptionFilter{
-        Mention: roamhq.Bool(
-            true,
-        ),
-    },
 }
 client.Webhook.Subscribe(
     context.TODO(),
@@ -6191,6 +8402,11 @@ client.Webhook.Subscribe(
 <dd>
 
 **filter:** `*roamhq.WebhookSubscriptionFilter` 
+
+Optional event-specific filter. Which keys are valid depends on `event`
+(see the schema). Omit to receive every occurrence; `{}` and `null` are
+rejected rather than treated as "omitted". Example for DMs only:
+`{"chatType": "dm"}`.
     
 </dd>
 </dl>
@@ -6204,6 +8420,24 @@ Optional [API version](https://developer.ro.am/docs/guides/api-versioning) (`YYY
 this subscription's payload shape to. When omitted, the subscription is
 frozen at your integration's default version. Unsupported values return
 `400`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**destination:** `*roamhq.WebhookSubscriptionRequestDestination` 
+
+Optional delivery authentication. Omit for Standard Webhooks signed with
+the API client's `whsec_`. Set `type` to `grok_bot` to deliver to a
+[Grok Bot](https://developer.ro.am/docs/integrations/grok) webhook-routine URL: Roam signs with
+the routine's sender key (`Authorization: Bearer` plus
+`X-Grok-Signature`) or, if `token` is a `whsec_…` Standard Webhooks
+secret, uses that secret instead of the API client's. The token is
+write-only — subscribe and list responses echo `destination.type` only.
+Re-subscribe without this field leaves existing destination auth
+unchanged; send `"type": ""` to clear it.
     
 </dd>
 </dl>
@@ -6295,9 +8529,10 @@ client.Webhook.Unsubscribe(
 <dd>
 
 List recent **failed** webhook delivery attempts for the authenticated API
-client, newest first. Use this to debug a misbehaving endpoint and to find
-the events you need to replay: successful (2xx) deliveries are never
-recorded, so every row here is a delivery your endpoint did not accept.
+client, newest first by default (see `ascending`). Use this to debug a
+misbehaving endpoint and to find the events you need to replay:
+successful (2xx) deliveries are never recorded, so every row here is a
+delivery your endpoint did not accept.
 
 Timeouts are first-class failures: `statusCode` is `0` and `error` is
 `timeout`. For HTTP error responses, a truncated copy of your server's
@@ -6360,7 +8595,7 @@ client.Webhook.Deliveries(
 <dl>
 <dd>
 
-**after:** `*string` — Only return deliveries after this time (RFC3339 or `YYYY-MM-DD`). Results switch to oldest-first.
+**after:** `*string` — Only return deliveries after this time (RFC3339 or `YYYY-MM-DD`). When `ascending` is omitted, results switch to oldest-first.
     
 </dd>
 </dl>
@@ -6369,6 +8604,20 @@ client.Webhook.Deliveries(
 <dd>
 
 **before:** `*string` — Only return deliveries before this time (RFC3339 or `YYYY-MM-DD`).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ascending:** `*bool` 
+
+`true` sorts oldest-first. `false` sorts newest-first, even when
+`after` is set. When omitted, results are oldest-first if `after` is
+set and newest-first otherwise. Send the same value on every page;
+the cursor does not carry the direction. Accepts `true`/`false` or
+`1`/`0`.
     
 </dd>
 </dl>

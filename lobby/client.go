@@ -78,13 +78,21 @@ func (c *Client) List(
 
 // Lists bookings for a specific lobby configuration, filtered by date range (after/before).
 //
-// The ordering of results depends on the filter specified:
+// The ordering of results depends on `ascending` and `after`:
 //
-//   - When no parameters are provided, the most recent bookings are returned,
-//     sorted in reverse chronological order. This is equivalent to specifying `before`
-//     as NOW and leaving `after` unspecified.
+//   - `ascending=true` sorts in forward chronological order (oldest first).
+//     `ascending=false` sorts in reverse chronological order (newest first),
+//     even when `after` is specified.
 //
-// - If `after` is specified, the results are sorted in forward chronological order.
+//   - When `ascending` is omitted and `after` is not specified, the most recent
+//     bookings are returned in reverse chronological order. This is equivalent
+//     to specifying `before` as NOW and leaving `after` unspecified.
+//
+//   - When `ascending` is omitted and `after` is specified, the results are
+//     sorted in forward chronological order.
+//
+// Send the same `ascending` value on every page. The cursor marks where to
+// resume, not which direction to sort.
 //
 // Either dates or datetimes may be specified. Dates are interpreted in UTC.
 //
