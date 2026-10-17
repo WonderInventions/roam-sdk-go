@@ -21,9 +21,13 @@ var (
 type ListConversationRequest struct {
 	// Only return conversations that started before this ISO-8601 timestamp.
 	Before *time.Time `json:"-" url:"before,omitempty"`
-	// Only return conversations that started after this ISO-8601 timestamp.
+	// Only return conversations that started after this ISO-8601 timestamp. When `ascending` is omitted, this also sorts oldest-first.
 	After *time.Time `json:"-" url:"after,omitempty"`
-	// Sort results in ascending order by start time. Default is descending (newest first).
+	// Sort by start time. `true` sorts oldest-first. `false` sorts
+	// newest-first, even when `after` is set. When omitted, results are
+	// oldest-first if `after` is set and newest-first otherwise. Send the
+	// same value on every page; the cursor does not carry the direction.
+	// Accepts `true`/`false` or `1`/`0`.
 	Ascending *bool `json:"-" url:"ascending,omitempty"`
 	// The number of conversations to return per response.
 	Limit *int `json:"-" url:"limit,omitempty"`

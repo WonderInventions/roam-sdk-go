@@ -8,8 +8,10 @@ import (
 	chat "ro.am/roamhq/chat"
 	conversation "ro.am/roamhq/conversation"
 	core "ro.am/roamhq/core"
+	folder "ro.am/roamhq/folder"
 	group "ro.am/roamhq/group"
 	groups "ro.am/roamhq/groups"
+	guestbadges "ro.am/roamhq/guestbadges"
 	internal "ro.am/roamhq/internal"
 	item "ro.am/roamhq/item"
 	lobby "ro.am/roamhq/lobby"
@@ -20,6 +22,7 @@ import (
 	option "ro.am/roamhq/option"
 	reaction "ro.am/roamhq/reaction"
 	story "ro.am/roamhq/story"
+	ticker "ro.am/roamhq/ticker"
 	token "ro.am/roamhq/token"
 	user "ro.am/roamhq/user"
 	userauditlog "ro.am/roamhq/userauditlog"
@@ -43,8 +46,11 @@ type Client struct {
 	Lobby        *lobby.Client
 	Magicast     *magicast.Client
 	Magicasts    *magicasts.Client
+	Folder       *folder.Client
+	Ticker       *ticker.Client
 	Group        *group.Client
 	Groups       *groups.Client
+	GuestBadges  *guestbadges.Client
 	Token        *token.Client
 	Webhook      *webhook.Client
 
@@ -71,8 +77,11 @@ func NewClient(opts ...option.RequestOption) *Client {
 		Lobby:        lobby.NewClient(options),
 		Magicast:     magicast.NewClient(options),
 		Magicasts:    magicasts.NewClient(options),
+		Folder:       folder.NewClient(options),
+		Ticker:       ticker.NewClient(options),
 		Group:        group.NewClient(options),
 		Groups:       groups.NewClient(options),
+		GuestBadges:  guestbadges.NewClient(options),
 		Token:        token.NewClient(options),
 		Webhook:      webhook.NewClient(options),
 		options:      options,
