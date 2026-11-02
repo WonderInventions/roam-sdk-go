@@ -36,6 +36,8 @@ func NewClient(options *core.RequestOptions) *Client {
 
 // Get a list of user audit log entries for the account.
 //
+// **Access:** Organization only.
+//
 // **Required scope:** `userauditlog:read`
 //
 // Example:

@@ -435,3 +435,304 @@ func (e *Error) String() string {
 	}
 	return fmt.Sprintf("%#v", e)
 }
+
+var (
+	magicastFieldID            = big.NewInt(1 << 0)
+	magicastFieldName          = big.NewInt(1 << 1)
+	magicastFieldCreatedAt     = big.NewInt(1 << 2)
+	magicastFieldOwnerID       = big.NewInt(1 << 3)
+	magicastFieldCoverImageURL = big.NewInt(1 << 4)
+)
+
+type Magicast struct {
+	// Unique identifier for the magicast
+	ID string `json:"id" url:"id"`
+	// Display name of the magicast
+	Name string `json:"name" url:"name"`
+	// ISO-8601 timestamp when the magicast was created (UTC)
+	CreatedAt time.Time `json:"createdAt" url:"createdAt"`
+	// Address ID of the magicast owner
+	OwnerID *string `json:"ownerId,omitempty" url:"ownerId,omitempty"`
+	// URL for the magicast cover image thumbnail
+	CoverImageURL *string `json:"coverImageUrl,omitempty" url:"coverImageUrl,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (m *Magicast) GetID() string {
+	if m == nil {
+		return ""
+	}
+	return m.ID
+}
+
+func (m *Magicast) GetName() string {
+	if m == nil {
+		return ""
+	}
+	return m.Name
+}
+
+func (m *Magicast) GetCreatedAt() time.Time {
+	if m == nil {
+		return time.Time{}
+	}
+	return m.CreatedAt
+}
+
+func (m *Magicast) GetOwnerID() *string {
+	if m == nil {
+		return nil
+	}
+	return m.OwnerID
+}
+
+func (m *Magicast) GetCoverImageURL() *string {
+	if m == nil {
+		return nil
+	}
+	return m.CoverImageURL
+}
+
+func (m *Magicast) GetExtraProperties() map[string]interface{} {
+	if m == nil {
+		return nil
+	}
+	return m.extraProperties
+}
+
+func (m *Magicast) require(field *big.Int) {
+	if m.explicitFields == nil {
+		m.explicitFields = big.NewInt(0)
+	}
+	m.explicitFields.Or(m.explicitFields, field)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *Magicast) SetID(id string) {
+	m.ID = id
+	m.require(magicastFieldID)
+}
+
+// SetName sets the Name field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *Magicast) SetName(name string) {
+	m.Name = name
+	m.require(magicastFieldName)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *Magicast) SetCreatedAt(createdAt time.Time) {
+	m.CreatedAt = createdAt
+	m.require(magicastFieldCreatedAt)
+}
+
+// SetOwnerID sets the OwnerID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *Magicast) SetOwnerID(ownerID *string) {
+	m.OwnerID = ownerID
+	m.require(magicastFieldOwnerID)
+}
+
+// SetCoverImageURL sets the CoverImageURL field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *Magicast) SetCoverImageURL(coverImageURL *string) {
+	m.CoverImageURL = coverImageURL
+	m.require(magicastFieldCoverImageURL)
+}
+
+func (m *Magicast) UnmarshalJSON(data []byte) error {
+	type embed Magicast
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"createdAt"`
+	}{
+		embed: embed(*m),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*m = Magicast(unmarshaler.embed)
+	m.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *m)
+	if err != nil {
+		return err
+	}
+	m.extraProperties = extraProperties
+	m.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (m *Magicast) MarshalJSON() ([]byte, error) {
+	type embed Magicast
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"createdAt"`
+	}{
+		embed:     embed(*m),
+		CreatedAt: internal.NewDateTime(m.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, m.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (m *Magicast) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	if len(m.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(m.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(m); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", m)
+}
+
+// Out-of-office / "Will Return" status. A user can be `checkedIn` and still
+// have `willReturn` (multi-day Out of Roam) — key off the presence of this
+// object rather than `status` alone.
+//
+// On `user.info` / `user.list` (with `expand=status`) and `user.status.update`
+// webhooks, elapsed return times are omitted. On `user.status.set` the written
+// value is always returned.
+var (
+	willReturnFieldReturnTime = big.NewInt(1 << 0)
+	willReturnFieldReason     = big.NewInt(1 << 1)
+	willReturnFieldOutOfRoam  = big.NewInt(1 << 2)
+)
+
+type WillReturn struct {
+	// When the user is expected to return (RFC 3339).
+	ReturnTime time.Time `json:"returnTime" url:"returnTime"`
+	// Optional absence message (for example "On Vacation" or "Out to lunch").
+	// At most 128 Unicode code points.
+	Reason *string `json:"reason,omitempty" url:"reason,omitempty"`
+	// When true, multi-day Out of Roam that persists across check-ins. When
+	// false or omitted on a **read**, same-day Will Return Today.
+	//
+	// `user.status.set` defaults omitted `outOfRoam` to **true**. Will Return
+	// Today must send `outOfRoam: false` explicitly, and `returnTime` must be
+	// less than 10 hours from now.
+	OutOfRoam *bool `json:"outOfRoam,omitempty" url:"outOfRoam,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (w *WillReturn) GetReturnTime() time.Time {
+	if w == nil {
+		return time.Time{}
+	}
+	return w.ReturnTime
+}
+
+func (w *WillReturn) GetReason() *string {
+	if w == nil {
+		return nil
+	}
+	return w.Reason
+}
+
+func (w *WillReturn) GetOutOfRoam() *bool {
+	if w == nil {
+		return nil
+	}
+	return w.OutOfRoam
+}
+
+func (w *WillReturn) GetExtraProperties() map[string]interface{} {
+	if w == nil {
+		return nil
+	}
+	return w.extraProperties
+}
+
+func (w *WillReturn) require(field *big.Int) {
+	if w.explicitFields == nil {
+		w.explicitFields = big.NewInt(0)
+	}
+	w.explicitFields.Or(w.explicitFields, field)
+}
+
+// SetReturnTime sets the ReturnTime field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WillReturn) SetReturnTime(returnTime time.Time) {
+	w.ReturnTime = returnTime
+	w.require(willReturnFieldReturnTime)
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WillReturn) SetReason(reason *string) {
+	w.Reason = reason
+	w.require(willReturnFieldReason)
+}
+
+// SetOutOfRoam sets the OutOfRoam field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WillReturn) SetOutOfRoam(outOfRoam *bool) {
+	w.OutOfRoam = outOfRoam
+	w.require(willReturnFieldOutOfRoam)
+}
+
+func (w *WillReturn) UnmarshalJSON(data []byte) error {
+	type embed WillReturn
+	var unmarshaler = struct {
+		embed
+		ReturnTime *internal.DateTime `json:"returnTime"`
+	}{
+		embed: embed(*w),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*w = WillReturn(unmarshaler.embed)
+	w.ReturnTime = unmarshaler.ReturnTime.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *w)
+	if err != nil {
+		return err
+	}
+	w.extraProperties = extraProperties
+	w.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (w *WillReturn) MarshalJSON() ([]byte, error) {
+	type embed WillReturn
+	var marshaler = struct {
+		embed
+		ReturnTime *internal.DateTime `json:"returnTime"`
+	}{
+		embed:      embed(*w),
+		ReturnTime: internal.NewDateTime(w.ReturnTime),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, w.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (w *WillReturn) String() string {
+	if w == nil {
+		return "<nil>"
+	}
+	if len(w.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(w.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(w); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", w)
+}

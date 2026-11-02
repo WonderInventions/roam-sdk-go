@@ -45,11 +45,15 @@ var (
 )
 
 type ListMagicastRequest struct {
-	// Only return magicasts created after this time (RFC-3339).
+	// Only return magicasts created after this time (RFC-3339). When `ascending` is omitted, this also sorts oldest-first.
 	After *time.Time `json:"-" url:"after,omitempty"`
 	// Only return magicasts created before this time (RFC-3339).
 	Before *time.Time `json:"-" url:"before,omitempty"`
-	// Sort oldest-first instead of newest-first.
+	// `true` sorts oldest-first. `false` sorts newest-first, even when
+	// `after` is set. When omitted, results are oldest-first if `after` is
+	// set and newest-first otherwise. Send the same value on every page;
+	// the cursor does not carry the direction. Accepts `true`/`false` or
+	// `1`/`0`.
 	Ascending *bool `json:"-" url:"ascending,omitempty"`
 	// Number of magicasts to return per response. Default 10.
 	Limit *int `json:"-" url:"limit,omitempty"`
@@ -100,167 +104,6 @@ func (l *ListMagicastRequest) SetLimit(limit *int) {
 func (l *ListMagicastRequest) SetCursor(cursor *string) {
 	l.Cursor = cursor
 	l.require(listMagicastRequestFieldCursor)
-}
-
-var (
-	magicastFieldID            = big.NewInt(1 << 0)
-	magicastFieldName          = big.NewInt(1 << 1)
-	magicastFieldCreatedAt     = big.NewInt(1 << 2)
-	magicastFieldOwnerID       = big.NewInt(1 << 3)
-	magicastFieldCoverImageURL = big.NewInt(1 << 4)
-)
-
-type Magicast struct {
-	// Unique identifier for the magicast
-	ID string `json:"id" url:"id"`
-	// Display name of the magicast
-	Name string `json:"name" url:"name"`
-	// ISO-8601 timestamp when the magicast was created (UTC)
-	CreatedAt time.Time `json:"createdAt" url:"createdAt"`
-	// Address ID of the magicast owner
-	OwnerID *string `json:"ownerId,omitempty" url:"ownerId,omitempty"`
-	// URL for the magicast cover image thumbnail
-	CoverImageURL *string `json:"coverImageUrl,omitempty" url:"coverImageUrl,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (m *Magicast) GetID() string {
-	if m == nil {
-		return ""
-	}
-	return m.ID
-}
-
-func (m *Magicast) GetName() string {
-	if m == nil {
-		return ""
-	}
-	return m.Name
-}
-
-func (m *Magicast) GetCreatedAt() time.Time {
-	if m == nil {
-		return time.Time{}
-	}
-	return m.CreatedAt
-}
-
-func (m *Magicast) GetOwnerID() *string {
-	if m == nil {
-		return nil
-	}
-	return m.OwnerID
-}
-
-func (m *Magicast) GetCoverImageURL() *string {
-	if m == nil {
-		return nil
-	}
-	return m.CoverImageURL
-}
-
-func (m *Magicast) GetExtraProperties() map[string]interface{} {
-	if m == nil {
-		return nil
-	}
-	return m.extraProperties
-}
-
-func (m *Magicast) require(field *big.Int) {
-	if m.explicitFields == nil {
-		m.explicitFields = big.NewInt(0)
-	}
-	m.explicitFields.Or(m.explicitFields, field)
-}
-
-// SetID sets the ID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (m *Magicast) SetID(id string) {
-	m.ID = id
-	m.require(magicastFieldID)
-}
-
-// SetName sets the Name field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (m *Magicast) SetName(name string) {
-	m.Name = name
-	m.require(magicastFieldName)
-}
-
-// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (m *Magicast) SetCreatedAt(createdAt time.Time) {
-	m.CreatedAt = createdAt
-	m.require(magicastFieldCreatedAt)
-}
-
-// SetOwnerID sets the OwnerID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (m *Magicast) SetOwnerID(ownerID *string) {
-	m.OwnerID = ownerID
-	m.require(magicastFieldOwnerID)
-}
-
-// SetCoverImageURL sets the CoverImageURL field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (m *Magicast) SetCoverImageURL(coverImageURL *string) {
-	m.CoverImageURL = coverImageURL
-	m.require(magicastFieldCoverImageURL)
-}
-
-func (m *Magicast) UnmarshalJSON(data []byte) error {
-	type embed Magicast
-	var unmarshaler = struct {
-		embed
-		CreatedAt *internal.DateTime `json:"createdAt"`
-	}{
-		embed: embed(*m),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*m = Magicast(unmarshaler.embed)
-	m.CreatedAt = unmarshaler.CreatedAt.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *m)
-	if err != nil {
-		return err
-	}
-	m.extraProperties = extraProperties
-	m.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (m *Magicast) MarshalJSON() ([]byte, error) {
-	type embed Magicast
-	var marshaler = struct {
-		embed
-		CreatedAt *internal.DateTime `json:"createdAt"`
-	}{
-		embed:     embed(*m),
-		CreatedAt: internal.NewDateTime(m.CreatedAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, m.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (m *Magicast) String() string {
-	if m == nil {
-		return "<nil>"
-	}
-	if len(m.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(m.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(m); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", m)
 }
 
 // A navigation chapter generated from the Magicast transcript.
