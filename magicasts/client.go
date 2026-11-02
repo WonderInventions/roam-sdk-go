@@ -57,7 +57,10 @@ func NewClient(options *core.RequestOptions) *Client {
 // **Access:** Organization and Personal. Personal access tokens restrict to
 // Magicasts owned by the authenticated user.
 //
-// **Required scope:** `magicast:read`
+// **Required scope:** `magicast:read.shareLink`
+//
+// Older clients may still work with `magicast:read` through
+// [grandfathering](https://developer.ro.am/docs/guides/scopes#share-links).
 //
 // Example:
 //

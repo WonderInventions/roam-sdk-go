@@ -128,7 +128,7 @@ func (c *Client) List(
 // Resolve a v1 principal by ID, or look up a workspace member by email.
 //
 // ID lookup resolves active or archived members, guests, and authorized
-// automated actors (classic bots, agents, assistants, and coworkers). The
+// automated actors (classic bots, agents, and assistants). The
 // response always includes `type: "user" | "bot"`; guests additionally have
 // `isGuest: true`. Groups, unknown IDs, and automated actors outside the
 // caller's Roam/account/owner boundary return `user_not_found`.

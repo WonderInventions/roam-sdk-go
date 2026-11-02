@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	recordingListRequestFieldAfter  = big.NewInt(1 << 0)
-	recordingListRequestFieldBefore = big.NewInt(1 << 1)
-	recordingListRequestFieldLimit  = big.NewInt(1 << 2)
-	recordingListRequestFieldCursor = big.NewInt(1 << 3)
+	recordingListRequestFieldAfter     = big.NewInt(1 << 0)
+	recordingListRequestFieldBefore    = big.NewInt(1 << 1)
+	recordingListRequestFieldAscending = big.NewInt(1 << 2)
+	recordingListRequestFieldLimit     = big.NewInt(1 << 3)
+	recordingListRequestFieldCursor    = big.NewInt(1 << 4)
 )
 
 type RecordingListRequest struct {
@@ -24,6 +25,12 @@ type RecordingListRequest struct {
 	// The datetime until which to list recordings (YYYY-MM-DD or RFC-3339).
 	// Defaults to "now".
 	Before *string `json:"-" url:"before,omitempty"`
+	// `true` sorts oldest-first. `false` sorts newest-first, even when
+	// `after` is set. When omitted, results are oldest-first if `after` is
+	// set and newest-first otherwise. Send the same value on every page;
+	// the cursor does not carry the direction. Accepts `true`/`false` or
+	// `1`/`0`.
+	Ascending *bool `json:"-" url:"ascending,omitempty"`
 	// The number of recordings to return per response. Default is 10.
 	Limit *int `json:"-" url:"limit,omitempty"`
 	// Opaque pagination cursor from a previous response's `nextCursor`. Do not construct cursors manually.
@@ -52,6 +59,13 @@ func (r *RecordingListRequest) SetAfter(after *string) {
 func (r *RecordingListRequest) SetBefore(before *string) {
 	r.Before = before
 	r.require(recordingListRequestFieldBefore)
+}
+
+// SetAscending sets the Ascending field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RecordingListRequest) SetAscending(ascending *bool) {
+	r.Ascending = ascending
+	r.require(recordingListRequestFieldAscending)
 }
 
 // SetLimit sets the Limit field and marks it as non-optional;

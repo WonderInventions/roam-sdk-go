@@ -35,7 +35,8 @@ func NewClient(options *core.RequestOptions) *Client {
 	}
 }
 
-// Lists non-archived groups accessible to the caller.
+// Lists non-archived groups the caller can see. Personal tokens see public
+// groups in their Roam and private groups the owner belongs to.
 //
 // Filter by name with `query` (ranked text match), restrict by group
 // type with `type`, and paginate with `limit` / `cursor`.
@@ -115,6 +116,9 @@ func (c *Client) List(
 //
 // Provide either `id` or `name`, not both.
 //
+// **Access:** Organization and Personal. Personal tokens can read public
+// groups in their Roam and private groups the owner belongs to.
+//
 // **Required scope:** `group:read`
 //
 // Example:
@@ -147,6 +151,9 @@ func (c *Client) Info(
 // that capability.
 //
 // Groups require at least one member. Users can be specified by user ID or email address.
+// Unrecognized emails are invited as group members only — they do not receive a
+// [Guest Badge](https://developer.ro.am/docs/guides/guest-badges) unless you also call
+// [`guest.badge.create`](https://developer.ro.am/docs/api/guest-badge-create).
 //
 // **Required scope:** `group:write`
 //
@@ -345,6 +352,8 @@ func (c *Client) Members(
 // Add one or more group members with specified roles.
 //
 // Members can be specified by user ID or email address. Each member must be assigned a role (member or admin).
+//
+// Adding an unrecognized email does **not** grant a [Guest Badge](https://developer.ro.am/docs/guides/guest-badges). Use [`guest.badge.create`](https://developer.ro.am/docs/api/guest-badge-create) first if the person is not a workspace member.
 //
 // Apps may add members to a group if one of the following conditions is true:
 // 1. It is a public group in their Roam.

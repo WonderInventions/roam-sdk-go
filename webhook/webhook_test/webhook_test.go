@@ -113,11 +113,6 @@ func TestWebhookSubscribeWithWireMock(
 	request := &roamhq.WebhookSubscriptionRequest{
 		URL:   "https://example.com/hooks/messages",
 		Event: roamhq.WebhookSubscriptionRequestEventChatMessage,
-		Filter: &roamhq.WebhookSubscriptionFilter{
-			Mention: roamhq.Bool(
-				true,
-			),
-		},
 	}
 	_, invocationErr := client.Webhook.Subscribe(
 		context.TODO(),
